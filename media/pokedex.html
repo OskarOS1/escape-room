@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pokédex</title>
+<style>
+/* ── Themes ── */
+[data-theme="light"] {
+  --bg:        #f4f4f4;
+  --surface:   #ffffff;
+  --border:    #e0e0e0;
+  --text:      #222222;
+  --subtext:   #888888;
+  --header-bg: #cc0000;
+  --header-border: #a00000;
+  --search-bg: #ffffff;
+  --input-border: #cccccc;
+  --card-hover-border: #bbbbbb;
+  --results-text: #666666;
+  --footer-bg: #333333;
+  --footer-text: #aaaaaa;
+  --toggle-bg: #dddddd;
+  --toggle-knob: #ffffff;
+  --shadow: rgba(0,0,0,0.12);
+  --btn-reset-active: #cc0000;
+  --btn-reset-text: #ffffff;
+}
+[data-theme="dark"] {
+  --bg:        #121212;
+  --surface:   #1e1e1e;
+  --border:    #2e2e2e;
+  --text:      #eeeeee;
+  --subtext:   #888888;
+  --header-bg: #8b0000;
+  --header-border: #6a0000;
+  --search-bg: #1e1e1e;
+  --input-border: #3a3a3a;
+  --card-hover-border: #555555;
+  --results-text: #888888;
+  --footer-bg: #0a0a0a;
+  --footer-text: #666666;
+  --toggle-bg: #cc0000;
+  --toggle-knob: #ffffff;
+  --shadow: rgba(0,0,0,0.5);
+  --btn-reset-active: #ff3333;
+  --btn-reset-text: #ffffff;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background .25s, color .25s;
+}
+
+/* ── Navbar ── */
+#navbar {
+  background: var(--header-bg);
+  display: flex; align-items: center;
+  padding: 0 20px; height: 54px; gap: 14px;
+  border-bottom: 3px solid var(--header-border);
+  position: sticky; top: 0; z-index: 200;
+}
+.nav-ball svg { width:34px; height:34px; flex-shrink:0; }
+.nav-title { color:#fff; font-size:1.3rem; font-weight:800; letter-spacing:.5px; }
+
+/* Dark mode toggle */
+.dm-toggle {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer; user-select: none;
+}
+.dm-label { color: rgba(255,255,255,0.85); font-size: 0.8rem; font-weight:600; }
+.dm-switch {
+  width: 40px; height: 22px; border-radius: 11px;
+  background: var(--toggle-bg);
+  position: relative; transition: background .25s;
+  flex-shrink: 0;
+}
+.dm-switch::after {
+  content: "";
+  position: absolute; top: 3px; left: 3px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--toggle-knob);
+  transition: transform .25s;
+}
+[data-theme="dark"] .dm-switch::after { transform: translateX(18px); }
+
+/* ── Page header ── */
+#page-header {
+  background: var(--header-bg);
+  padding: 16px 20px 22px;
+  text-align: center;
+  border-bottom: 3px solid var(--header-border);
+}
+#page-header h1 { color:#fff; font-size:1.8rem; font-weight:800; letter-spacing:1px; text-shadow:0 2px 4px rgba(0,0,0,.3); }
+#page-header p  { color:rgba(255,255,255,.8); font-size:.9rem; margin-top:5px; }
+
+/* ── Search ── */
+#search-section {
+  background: var(--search-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  transition: background .25s;
+}
+.search-inner {
+  max-width: 780px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+}
+.search-box { position:relative; flex:1 1 240px; min-width:180px; }
+.search-box .ico {
+  position:absolute; left:12px; top:50%; transform:translateY(-50%);
+  color:var(--subtext); pointer-events:none; width:17px; height:17px;
+}
+.search-box input {
+  width:100%; padding:10px 14px 10px 40px;
+  border: 2px solid var(--input-border);
+  border-radius:4px; font-size:.95rem; font-family:inherit;
+  background: var(--surface); color: var(--text);
+  outline:none; transition: border-color .2s, background .25s, color .25s;
+}
+.search-box input:focus { border-color:#cc0000; }
+.filter-sel {
+  padding: 9px 12px;
+  border: 2px solid var(--input-border);
+  border-radius:4px; font-family:inherit; font-size:.88rem;
+  background: var(--surface); color: var(--text);
+  cursor:pointer; outline:none;
+  transition: border-color .2s, background .25s, color .25s;
+}
+.filter-sel:focus { border-color:#cc0000; }
+
+/* Reset Button */
+.btn-reset {
+  padding: 9px 16px;
+  border: 2px solid var(--input-border);
+  border-radius: 4px;
+  font-family: inherit; font-size: .88rem; font-weight: 600;
+  background: var(--surface); color: var(--subtext);
+  cursor: not-allowed; outline: none; opacity: 0.5;
+  transition: all .2s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-reset.active {
+  background: var(--btn-reset-active);
+  border-color: var(--btn-reset-active);
+  color: var(--btn-reset-text);
+  cursor: pointer; opacity: 1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.btn-reset.active:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Type pills */
+#type-row {
+  max-width:780px; margin:10px auto 0;
+  display:flex; flex-wrap:wrap; gap:5px; align-items:center;
+}
+#type-row .lbl { font-size:.8rem; font-weight:600; color:var(--subtext); margin-right:4px; }
+.tpill {
+  padding: 4px 12px; border-radius:3px; border:2px solid transparent;
+  font-size:.75rem; font-weight:700; cursor:pointer; color:#fff;
+  text-transform:capitalize; opacity:.55;
+  transition: opacity .15s, transform .1s;
+}
+.tpill:hover { opacity:.85; }
+.tpill.on { opacity:1; border-color:rgba(0,0,0,.35); transform:scale(1.07); box-shadow:0 2px 6px rgba(0,0,0,.25); }
+
+/* ── Results bar ── */
+#res-bar {
+  max-width:900px; margin:14px auto 6px;
+  padding: 0 18px;
+  font-size:.82rem; color:var(--results-text); font-weight:600;
+}
+
+/* ── Virtual scroll container ── */
+#scroll-wrap {
+  max-width:900px; margin:0 auto; padding:0 16px 48px;
+  position: relative;
+}
+/* spacer that holds the full scroll height */
+#spacer { width:100%; pointer-events:none; }
+/* visible window */
+#visible-grid {
+  position: absolute; left:16px; right:16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media(max-width:600px) { #visible-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:380px) { #visible-grid { grid-template-columns: 1fr; } }
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius:6px;
+  padding: 12px 8px 14px;
+  display:flex; flex-direction:column; align-items:center;
+  cursor:pointer;
+  transition: box-shadow .15s, transform .15s, border-color .15s, background .25s;
+  overflow:hidden; position:relative;
+}
+.card:hover {
+  box-shadow: 0 5px 18px var(--shadow);
+  transform: translateY(-3px);
+  border-color: var(--card-hover-border);
+}
+.card-num  { font-size:.7rem; font-weight:700; color:var(--subtext); align-self:flex-start; }
+.card-img  { width:110px; height:110px; object-fit:contain; margin:6px 0; transition:transform .2s; }
+.card:hover .card-img { transform:scale(1.08); }
+.card-name { font-size:.88rem; font-weight:700; text-align:center; margin-top:6px; color:var(--text); }
+.card-types { display:flex; gap:5px; margin-top:7px; flex-wrap:wrap; justify-content:center; }
+.tbadge {
+  font-size:.68rem; font-weight:700; padding:2px 9px;
+  border-radius:3px; color:#fff; text-transform:capitalize;
+}
+
+/* ── No results ── */
+#no-res {
+  display:none; text-align:center; padding:60px 20px;
+  color:var(--subtext); font-size:1rem; font-weight:600;
+}
+
+footer {
+  background:var(--footer-bg); color:var(--footer-text);
+  text-align:center; padding:18px; font-size:.75rem;
+  transition: background .25s;
+}
+footer strong { color:#fff; }
+</style>
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="nav-ball">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="48" fill="white" stroke="rgba(255,255,255,.3)" stroke-width="3"/>
+      <path d="M2 50 Q2 2 50 2 Q98 2 98 50 Z" fill="rgba(255,255,255,.85)"/>
+      <rect x="2" y="46" width="96" height="8" fill="rgba(255,255,255,.45)"/>
+      <circle cx="50" cy="50" r="10" fill="white" stroke="rgba(255,255,255,.4)" stroke-width="3"/>
+    </svg>
+  </div>
+  <span class="nav-title">Pokémon</span>
+  <div class="dm-toggle" id="dm-toggle" title="Dark Mode umschalten">
+    <span class="dm-label" id="dm-label">Dark Mode</span>
+    <div class="dm-switch" id="dm-switch"></div>
+  </div>
+</nav>
+
+<div id="page-header">
+  <h1>Pokédex</h1>
+  <p>Suche nach einem Pokémon nach Name, Nummer oder Typ</p>
+</div>
+
+<div id="search-section">
+  <div class="search-inner">
+    <div class="search-box">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="q" type="text" placeholder="Name oder Nummer …" autocomplete="off" spellcheck="false">
+    </div>
+    <select id="gen" class="filter-sel">
+      <option value="">Alle Generationen</option>
+      <option value="1">Gen I (1–151)</option>
+      <option value="2">Gen II (152–201)</option>
+    </select>
+    <select id="srt" class="filter-sel">
+      <option value="id">Nummer ↑</option>
+      <option value="name">Name A–Z</option>
+    </select>
+    <button id="btn-reset" class="btn-reset" title="Alle Filter zurücksetzen">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+      </svg>
+      Zurücksetzen
+    </button>
+  </div>
+  <div id="type-row"><span class="lbl">Typ:</span></div>
+</div>
+
+<div id="res-bar"></div>
+<div id="scroll-wrap">
+  <div id="spacer"></div>
+  <div id="visible-grid"></div>
+  <div id="no-res">😔 Kein Pokémon gefunden</div>
+</div>
+
+<footer>
+  Offline-Pokédex · Daten von <strong>PokéAPI</strong> · Bilder © The Pokémon Company · 201 Pokémon
+</footer>
+
+<script>
+const DATA = [{"i":1,"d":"Bisasam","e":"bulbasaur","t":["grass","poison"],"b":"pokedex_images/1.webp"},{"i":2,"d":"Bisaknosp","e":"ivysaur","t":["grass","poison"],"b":"pokedex_images/2.webp"},{"i":3,"d":"Bisaflor","e":"venusaur","t":["grass","poison"],"b":"pokedex_images/3.webp"},{"i":4,"d":"Glumanda","e":"charmander","t":["fire"],"b":"pokedex_images/4.webp"},{"i":5,"d":"Glutexo","e":"charmeleon","t":["fire"],"b":"pokedex_images/5.webp"},{"i":6,"d":"Glurak","e":"charizard","t":["fire","flying"],"b":"pokedex_images/6.webp"},{"i":7,"d":"Schiggy","e":"squirtle","t":["water"],"b":"pokedex_images/7.webp"},{"i":8,"d":"Schillok","e":"wartortle","t":["water"],"b":"pokedex_images/8.webp"},{"i":9,"d":"Turtok","e":"blastoise","t":["water"],"b":"pokedex_images/9.webp"},{"i":10,"d":"Raupy","e":"caterpie","t":["bug"],"b":"pokedex_images/10.webp"},{"i":11,"d":"Safcon","e":"metapod","t":["bug"],"b":"pokedex_images/11.webp"},{"i":12,"d":"Smettbo","e":"butterfree","t":["bug","flying"],"b":"pokedex_images/12.webp"},{"i":13,"d":"Hornliu","e":"weedle","t":["bug","poison"],"b":"pokedex_images/13.webp"},{"i":14,"d":"Kokuna","e":"kakuna","t":["bug","poison"],"b":"pokedex_images/14.webp"},{"i":15,"d":"Bibor","e":"beedrill","t":["bug","poison"],"b":"pokedex_images/15.webp"},{"i":16,"d":"Taubsi","e":"pidgey","t":["normal","flying"],"b":"pokedex_images/16.webp"},{"i":17,"d":"Tauboga","e":"pidgeotto","t":["normal","flying"],"b":"pokedex_images/17.webp"},{"i":18,"d":"Tauboss","e":"pidgeot","t":["normal","flying"],"b":"pokedex_images/18.webp"},{"i":19,"d":"Rattfratz","e":"rattata","t":["normal"],"b":"pokedex_images/19.webp"},{"i":20,"d":"Rattikarl","e":"raticate","t":["normal"],"b":"pokedex_images/20.webp"},{"i":21,"d":"Habitak","e":"spearow","t":["normal","flying"],"b":"pokedex_images/21.webp"},{"i":22,"d":"Ibitak","e":"fearow","t":["normal","flying"],"b":"pokedex_images/22.webp"},{"i":23,"d":"Rettan","e":"ekans","t":["poison"],"b":"pokedex_images/23.webp"},{"i":24,"d":"Arbok","e":"arbok","t":["poison"],"b":"pokedex_images/24.webp"},{"i":25,"d":"Pikachu","e":"pikachu","t":["electric"],"b":"pokedex_images/25.webp"},{"i":26,"d":"Raichu","e":"raichu","t":["electric"],"b":"pokedex_images/26.webp"},{"i":27,"d":"Sandan","e":"sandshrew","t":["ground"],"b":"pokedex_images/27.webp"},{"i":28,"d":"Sandamer","e":"sandslash","t":["ground"],"b":"pokedex_images/28.webp"},{"i":29,"d":"Nidoran♀","e":"nidoran-f","t":["poison"],"b":"pokedex_images/29.webp"},{"i":30,"d":"Nidorina","e":"nidorina","t":["poison"],"b":"pokedex_images/30.webp"},{"i":31,"d":"Nidoqueen","e":"nidoqueen","t":["poison","ground"],"b":"pokedex_images/31.webp"},{"i":32,"d":"Nidoran♂","e":"nidoran-m","t":["poison"],"b":"pokedex_images/32.webp"},{"i":33,"d":"Nidorino","e":"nidorino","t":["poison"],"b":"pokedex_images/33.webp"},{"i":34,"d":"Nidoking","e":"nidoking","t":["poison","ground"],"b":"pokedex_images/34.webp"},{"i":35,"d":"Piepi","e":"clefairy","t":["fairy"],"b":"pokedex_images/35.webp"},{"i":36,"d":"Pixi","e":"clefable","t":["fairy"],"b":"pokedex_images/36.webp"},{"i":37,"d":"Vulpix","e":"vulpix","t":["fire"],"b":"pokedex_images/37.webp"},{"i":38,"d":"Vulnona","e":"ninetales","t":["fire"],"b":"pokedex_images/38.webp"},{"i":39,"d":"Pummeluff","e":"jigglypuff","t":["normal","fairy"],"b":"pokedex_images/39.webp"},{"i":40,"d":"Knuddeluff","e":"wigglytuff","t":["normal","fairy"],"b":"pokedex_images/40.webp"},{"i":41,"d":"Zubat","e":"zubat","t":["poison","flying"],"b":"pokedex_images/41.webp"},{"i":42,"d":"Golbat","e":"golbat","t":["poison","flying"],"b":"pokedex_images/42.webp"},{"i":43,"d":"Myrapla","e":"oddish","t":["grass","poison"],"b":"pokedex_images/43.webp"},{"i":44,"d":"Duflor","e":"gloom","t":["grass","poison"],"b":"pokedex_images/44.webp"},{"i":45,"d":"Giflor","e":"vileplume","t":["grass","poison"],"b":"pokedex_images/45.webp"},{"i":46,"d":"Paras","e":"paras","t":["bug","grass"],"b":"pokedex_images/46.webp"},{"i":47,"d":"Parasek","e":"parasect","t":["bug","grass"],"b":"pokedex_images/47.webp"},{"i":48,"d":"Bluzuk","e":"venonat","t":["bug","poison"],"b":"pokedex_images/48.webp"},{"i":49,"d":"Omot","e":"venomoth","t":["bug","poison"],"b":"pokedex_images/49.webp"},{"i":50,"d":"Digda","e":"diglett","t":["ground"],"b":"pokedex_images/50.webp"},{"i":51,"d":"Digdri","e":"dugtrio","t":["ground"],"b":"pokedex_images/51.webp"},{"i":52,"d":"Mauzi","e":"meowth","t":["normal"],"b":"pokedex_images/52.webp"},{"i":53,"d":"Snobilikat","e":"persian","t":["normal"],"b":"pokedex_images/53.webp"},{"i":54,"d":"Enton","e":"psyduck","t":["water"],"b":"pokedex_images/54.webp"},{"i":55,"d":"Entoron","e":"golduck","t":["water"],"b":"pokedex_images/55.webp"},{"i":56,"d":"Menki","e":"mankey","t":["fighting"],"b":"pokedex_images/56.webp"},{"i":57,"d":"Rasaff","e":"primeape","t":["fighting"],"b":"pokedex_images/57.webp"},{"i":58,"d":"Fukano","e":"growlithe","t":["fire"],"b":"pokedex_images/58.webp"},{"i":59,"d":"Arkani","e":"arcanine","t":["fire"],"b":"pokedex_images/59.webp"},{"i":60,"d":"Quapsel","e":"poliwag","t":["water"],"b":"pokedex_images/60.webp"},{"i":61,"d":"Quaputzi","e":"poliwhirl","t":["water"],"b":"pokedex_images/61.webp"},{"i":62,"d":"Quappo","e":"poliwrath","t":["water","fighting"],"b":"pokedex_images/62.webp"},{"i":63,"d":"Abra","e":"abra","t":["psychic"],"b":"pokedex_images/63.webp"},{"i":64,"d":"Kadabra","e":"kadabra","t":["psychic"],"b":"pokedex_images/64.webp"},{"i":65,"d":"Simsala","e":"alakazam","t":["psychic"],"b":"pokedex_images/65.webp"},{"i":66,"d":"Machollo","e":"machop","t":["fighting"],"b":"pokedex_images/66.webp"},{"i":67,"d":"Maschock","e":"machoke","t":["fighting"],"b":"pokedex_images/67.webp"},{"i":68,"d":"Machomei","e":"machamp","t":["fighting"],"b":"pokedex_images/68.webp"},{"i":69,"d":"Knofensa","e":"bellsprout","t":["grass","poison"],"b":"pokedex_images/69.webp"},{"i":70,"d":"Ultrigaria","e":"weepinbell","t":["grass","poison"],"b":"pokedex_images/70.webp"},{"i":71,"d":"Sarzenia","e":"victreebel","t":["grass","poison"],"b":"pokedex_images/71.webp"},{"i":72,"d":"Tentacha","e":"tentacool","t":["water","poison"],"b":"pokedex_images/72.webp"},{"i":73,"d":"Tentoxa","e":"tentacruel","t":["water","poison"],"b":"pokedex_images/73.webp"},{"i":74,"d":"Kleinstein","e":"geodude","t":["rock","ground"],"b":"pokedex_images/74.webp"},{"i":75,"d":"Georok","e":"graveler","t":["rock","ground"],"b":"pokedex_images/75.webp"},{"i":76,"d":"Geowaz","e":"golem","t":["rock","ground"],"b":"pokedex_images/76.webp"},{"i":77,"d":"Ponita","e":"ponyta","t":["fire"],"b":"pokedex_images/77.webp"},{"i":78,"d":"Gallopa","e":"rapidash","t":["fire"],"b":"pokedex_images/78.webp"},{"i":79,"d":"Flegmon","e":"slowpoke","t":["water","psychic"],"b":"pokedex_images/79.webp"},{"i":80,"d":"Lahmus","e":"slowbro","t":["water","psychic"],"b":"pokedex_images/80.webp"},{"i":81,"d":"Magnetilo","e":"magnemite","t":["electric","steel"],"b":"pokedex_images/81.webp"},{"i":82,"d":"Magneton","e":"magneton","t":["electric","steel"],"b":"pokedex_images/82.webp"},{"i":83,"d":"Porenta","e":"farfetchd","t":["normal","flying"],"b":"pokedex_images/83.webp"},{"i":84,"d":"Dodu","e":"doduo","t":["normal","flying"],"b":"pokedex_images/84.webp"},{"i":85,"d":"Dodri","e":"dodrio","t":["normal","flying"],"b":"pokedex_images/85.webp"},{"i":86,"d":"Jurob","e":"seel","t":["water"],"b":"pokedex_images/86.webp"},{"i":87,"d":"Jugong","e":"dewgong","t":["water","ice"],"b":"pokedex_images/87.webp"},{"i":88,"d":"Sleima","e":"grimer","t":["poison"],"b":"pokedex_images/88.webp"},{"i":89,"d":"Sleimok","e":"muk","t":["poison"],"b":"pokedex_images/89.webp"},{"i":90,"d":"Muschas","e":"shellder","t":["water"],"b":"pokedex_images/90.webp"},{"i":91,"d":"Austos","e":"cloyster","t":["water","ice"],"b":"pokedex_images/91.webp"},{"i":92,"d":"Nebulak","e":"gastly","t":["ghost","poison"],"b":"pokedex_images/92.webp"},{"i":93,"d":"Alpollo","e":"haunter","t":["ghost","poison"],"b":"pokedex_images/93.webp"},{"i":94,"d":"Gengar","e":"gengar","t":["ghost","poison"],"b":"pokedex_images/94.webp"},{"i":95,"d":"Onix","e":"onix","t":["rock","ground"],"b":"pokedex_images/95.webp"},{"i":96,"d":"Traumato","e":"drowzee","t":["psychic"],"b":"pokedex_images/96.webp"},{"i":97,"d":"Hypno","e":"hypno","t":["psychic"],"b":"pokedex_images/97.webp"},{"i":98,"d":"Krabby","e":"krabby","t":["water"],"b":"pokedex_images/98.webp"},{"i":99,"d":"Kingler","e":"kingler","t":["water"],"b":"pokedex_images/99.webp"},{"i":100,"d":"Voltobal","e":"voltorb","t":["electric"],"b":"pokedex_images/100.webp"},{"i":101,"d":"Lektrobal","e":"electrode","t":["electric"],"b":"pokedex_images/101.webp"},{"i":102,"d":"Owei","e":"exeggcute","t":["grass","psychic"],"b":"pokedex_images/102.webp"},{"i":103,"d":"Kokowei","e":"exeggutor","t":["grass","psychic"],"b":"pokedex_images/103.webp"},{"i":104,"d":"Tragosso","e":"cubone","t":["ground"],"b":"pokedex_images/104.webp"},{"i":105,"d":"Knogga","e":"marowak","t":["ground"],"b":"pokedex_images/105.webp"},{"i":106,"d":"Kicklee","e":"hitmonlee","t":["fighting"],"b":"pokedex_images/106.webp"},{"i":107,"d":"Nockchan","e":"hitmonchan","t":["fighting"],"b":"pokedex_images/107.webp"},{"i":108,"d":"Schlurp","e":"lickitung","t":["normal"],"b":"pokedex_images/108.webp"},{"i":109,"d":"Smogon","e":"koffing","t":["poison"],"b":"pokedex_images/109.webp"},{"i":110,"d":"Smogmog","e":"weezing","t":["poison"],"b":"pokedex_images/110.webp"},{"i":111,"d":"Rihorn","e":"rhyhorn","t":["ground","rock"],"b":"pokedex_images/111.webp"},{"i":112,"d":"Rizeros","e":"rhydon","t":["ground","rock"],"b":"pokedex_images/112.webp"},{"i":113,"d":"Chaneira","e":"chansey","t":["normal"],"b":"pokedex_images/113.webp"},{"i":114,"d":"Tangela","e":"tangela","t":["grass"],"b":"pokedex_images/114.webp"},{"i":115,"d":"Kangama","e":"kangaskhan","t":["normal"],"b":"pokedex_images/115.webp"},{"i":116,"d":"Seeper","e":"horsea","t":["water"],"b":"pokedex_images/116.webp"},{"i":117,"d":"Seemon","e":"seadra","t":["water"],"b":"pokedex_images/117.webp"},{"i":118,"d":"Goldini","e":"goldeen","t":["water"],"b":"pokedex_images/118.webp"},{"i":119,"d":"Golking","e":"seaking","t":["water"],"b":"pokedex_images/119.webp"},{"i":120,"d":"Sterndu","e":"staryu","t":["water"],"b":"pokedex_images/120.webp"},{"i":121,"d":"Starmie","e":"starmie","t":["water","psychic"],"b":"pokedex_images/121.webp"},{"i":122,"d":"Pantimos","e":"mr-mime","t":["psychic","fairy"],"b":"pokedex_images/122.webp"},{"i":123,"d":"Sichlor","e":"scyther","t":["bug","flying"],"b":"pokedex_images/123.webp"},{"i":124,"d":"Rossana","e":"jynx","t":["ice","psychic"],"b":"pokedex_images/124.webp"},{"i":125,"d":"Elektek","e":"electabuzz","t":["electric"],"b":"pokedex_images/125.webp"},{"i":126,"d":"Magmar","e":"magmar","t":["fire"],"b":"pokedex_images/126.webp"},{"i":127,"d":"Pinsir","e":"pinsir","t":["bug"],"b":"pokedex_images/127.webp"},{"i":128,"d":"Tauros","e":"tauros","t":["normal"],"b":"pokedex_images/128.webp"},{"i":129,"d":"Karpador","e":"magikarp","t":["water"],"b":"pokedex_images/129.webp"},{"i":130,"d":"Garados","e":"gyarados","t":["water","flying"],"b":"pokedex_images/130.webp"},{"i":131,"d":"Lapras","e":"lapras","t":["water","ice"],"b":"pokedex_images/131.webp"},{"i":132,"d":"Ditto","e":"ditto","t":["normal"],"b":"pokedex_images/132.webp"},{"i":133,"d":"Evoli","e":"eevee","t":["normal"],"b":"pokedex_images/133.webp"},{"i":134,"d":"Aquana","e":"vaporeon","t":["water"],"b":"pokedex_images/134.webp"},{"i":135,"d":"Blitza","e":"jolteon","t":["electric"],"b":"pokedex_images/135.webp"},{"i":136,"d":"Flamara","e":"flareon","t":["fire"],"b":"pokedex_images/136.webp"},{"i":137,"d":"Porygon","e":"porygon","t":["normal"],"b":"pokedex_images/137.webp"},{"i":138,"d":"Amonitas","e":"omanyte","t":["rock","water"],"b":"pokedex_images/138.webp"},{"i":139,"d":"Amoroso","e":"omastar","t":["rock","water"],"b":"pokedex_images/139.webp"},{"i":140,"d":"Kabuto","e":"kabuto","t":["rock","water"],"b":"pokedex_images/140.webp"},{"i":141,"d":"Kabutops","e":"kabutops","t":["rock","water"],"b":"pokedex_images/141.webp"},{"i":142,"d":"Aerodactyl","e":"aerodactyl","t":["rock","flying"],"b":"pokedex_images/142.webp"},{"i":143,"d":"Relaxo","e":"snorlax","t":["normal"],"b":"pokedex_images/143.webp"},{"i":144,"d":"Arktos","e":"articuno","t":["ice","flying"],"b":"pokedex_images/144.webp"},{"i":145,"d":"Zapdos","e":"zapdos","t":["electric","flying"],"b":"pokedex_images/145.webp"},{"i":146,"d":"Lavados","e":"moltres","t":["fire","flying"],"b":"pokedex_images/146.webp"},{"i":147,"d":"Dratini","e":"dratini","t":["dragon"],"b":"pokedex_images/147.webp"},{"i":148,"d":"Dragonir","e":"dragonair","t":["dragon"],"b":"pokedex_images/148.webp"},{"i":149,"d":"Dragoran","e":"dragonite","t":["dragon","flying"],"b":"pokedex_images/149.webp"},{"i":150,"d":"Mewtu","e":"mewtwo","t":["psychic"],"b":"pokedex_images/150.webp"},{"i":151,"d":"Mew","e":"mew","t":["psychic"],"b":"pokedex_images/151.webp"},{"i":152,"d":"Endivie","e":"chikorita","t":["grass"],"b":"pokedex_images/152.webp"},{"i":153,"d":"Lorblatt","e":"bayleef","t":["grass"],"b":"pokedex_images/153.webp"},{"i":154,"d":"Meganie","e":"meganium","t":["grass"],"b":"pokedex_images/154.webp"},{"i":155,"d":"Feurigel","e":"cyndaquil","t":["fire"],"b":"pokedex_images/155.webp"},{"i":156,"d":"Igelavar","e":"quilava","t":["fire"],"b":"pokedex_images/156.webp"},{"i":157,"d":"Tornupto","e":"typhlosion","t":["fire"],"b":"pokedex_images/157.webp"},{"i":158,"d":"Karnimani","e":"totodile","t":["water"],"b":"pokedex_images/158.webp"},{"i":159,"d":"Tyracroc","e":"croconaw","t":["water"],"b":"pokedex_images/159.webp"},{"i":160,"d":"Impergator","e":"feraligatr","t":["water"],"b":"pokedex_images/160.webp"},{"i":161,"d":"Wiesor","e":"sentret","t":["normal"],"b":"pokedex_images/161.webp"},{"i":162,"d":"Wiesenior","e":"furret","t":["normal"],"b":"pokedex_images/162.webp"},{"i":163,"d":"Hoothoot","e":"hoothoot","t":["normal","flying"],"b":"pokedex_images/163.webp"},{"i":164,"d":"Noctuh","e":"noctowl","t":["normal","flying"],"b":"pokedex_images/164.webp"},{"i":165,"d":"Ledyba","e":"ledyba","t":["bug","flying"],"b":"pokedex_images/165.webp"},{"i":166,"d":"Ledian","e":"ledian","t":["bug","flying"],"b":"pokedex_images/166.webp"},{"i":167,"d":"Webarak","e":"spinarak","t":["bug","poison"],"b":"pokedex_images/167.webp"},{"i":168,"d":"Ariados","e":"ariados","t":["bug","poison"],"b":"pokedex_images/168.webp"},{"i":169,"d":"Iksbat","e":"crobat","t":["poison","flying"],"b":"pokedex_images/169.webp"},{"i":170,"d":"Lampi","e":"chinchou","t":["water","electric"],"b":"pokedex_images/170.webp"},{"i":171,"d":"Lanturn","e":"lanturn","t":["water","electric"],"b":"pokedex_images/171.webp"},{"i":172,"d":"Pichu","e":"pichu","t":["electric"],"b":"pokedex_images/172.webp"},{"i":173,"d":"Pii","e":"cleffa","t":["fairy"],"b":"pokedex_images/173.webp"},{"i":174,"d":"Fluffeluff","e":"igglybuff","t":["normal","fairy"],"b":"pokedex_images/174.webp"},{"i":175,"d":"Togepi","e":"togepi","t":["fairy"],"b":"pokedex_images/175.webp"},{"i":176,"d":"Togetic","e":"togetic","t":["fairy","flying"],"b":"pokedex_images/176.webp"},{"i":177,"d":"Natu","e":"natu","t":["psychic","flying"],"b":"pokedex_images/177.webp"},{"i":178,"d":"Xatu","e":"xatu","t":["psychic","flying"],"b":"pokedex_images/178.webp"},{"i":179,"d":"Voltilamm","e":"mareep","t":["electric"],"b":"pokedex_images/179.webp"},{"i":180,"d":"Waaty","e":"flaaffy","t":["electric"],"b":"pokedex_images/180.webp"},{"i":181,"d":"Ampharos","e":"ampharos","t":["electric"],"b":"pokedex_images/181.webp"},{"i":182,"d":"Blubella","e":"bellossom","t":["grass"],"b":"pokedex_images/182.webp"},{"i":183,"d":"Marill","e":"marill","t":["water","fairy"],"b":"pokedex_images/183.webp"},{"i":184,"d":"Azumarill","e":"azumarill","t":["water","fairy"],"b":"pokedex_images/184.webp"},{"i":185,"d":"Mogelbaum","e":"sudowoodo","t":["rock"],"b":"pokedex_images/185.webp"},{"i":186,"d":"Quaxo","e":"politoed","t":["water"],"b":"pokedex_images/186.webp"},{"i":187,"d":"Hoppspross","e":"hoppip","t":["grass","flying"],"b":"pokedex_images/187.webp"},{"i":188,"d":"Hubelupf","e":"skiploom","t":["grass","flying"],"b":"pokedex_images/188.webp"},{"i":189,"d":"Papungha","e":"jumpluff","t":["grass","flying"],"b":"pokedex_images/189.webp"},{"i":190,"d":"Griffel","e":"aipom","t":["normal"],"b":"pokedex_images/190.webp"},{"i":191,"d":"Sonnkern","e":"sunkern","t":["grass"],"b":"pokedex_images/191.webp"},{"i":192,"d":"Sonnflora","e":"sunflora","t":["grass"],"b":"pokedex_images/192.webp"},{"i":193,"d":"Yanma","e":"yanma","t":["bug","flying"],"b":"pokedex_images/193.webp"},{"i":194,"d":"Felino","e":"wooper","t":["water","ground"],"b":"pokedex_images/194.webp"},{"i":195,"d":"Morlord","e":"quagsire","t":["water","ground"],"b":"pokedex_images/195.webp"},{"i":196,"d":"Psiana","e":"espeon","t":["psychic"],"b":"pokedex_images/196.webp"},{"i":197,"d":"Nachtara","e":"umbreon","t":["dark"],"b":"pokedex_images/197.webp"},{"i":198,"d":"Kramurx","e":"murkrow","t":["dark","flying"],"b":"pokedex_images/198.webp"},{"i":199,"d":"Laschoking","e":"slowking","t":["water","psychic"],"b":"pokedex_images/199.webp"},{"i":200,"d":"Traunfugil","e":"misdreavus","t":["ghost"],"b":"pokedex_images/200.webp"},{"i":201,"d":"Icognito","e":"unown","t":["psychic"],"b":"pokedex_images/201.webp"}];
+const TC          = {"normal":"#9FA19F","fire":"#E62829","water":"#2980EF","electric":"#FAC000","grass":"#3FA129","ice":"#3DCEF3","fighting":"#FF8000","poison":"#9141CB","ground":"#915121","flying":"#81B9EF","psychic":"#EF4179","bug":"#91A119","rock":"#AFA981","ghost":"#704170","dragon":"#5060E1","dark":"#624D4E","steel":"#60A1B8","fairy":"#EF70EF"};
+const TDE         = {"normal":"Normal","fire":"Feuer","water":"Wasser","electric":"Elektro","grass":"Pflanze","ice":"Eis","fighting":"Kampf","poison":"Gift","ground":"Boden","flying":"Flug","psychic":"Psycho","bug":"Käfer","rock":"Gestein","ghost":"Geist","dragon":"Drache","dark":"Unlicht","steel":"Stahl","fairy":"Fee"};
+const TORDER      = ["normal","fire","water","electric","grass","ice","fighting","poison","ground","flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy"];
+const GEN         = {"1":[1,151],"2":[152,201]};
+
+/* ── Dark mode ── */
+const root = document.documentElement;
+let dark = localStorage.getItem("dm") === "1";
+function applyTheme() {
+  root.setAttribute("data-theme", dark ? "dark" : "light");
+  document.getElementById("dm-label").textContent = dark ? "Light Mode" : "Dark Mode";
+  localStorage.setItem("dm", dark ? "1" : "0");
+}
+applyTheme();
+document.getElementById("dm-toggle").addEventListener("click", () => { dark = !dark; applyTheme(); });
+
+/* ── Type pills ── */
+const typeRow = document.getElementById("type-row");
+TORDER.forEach(t => {
+  const b = document.createElement("button");
+  b.className = "tpill"; b.dataset.t = t;
+  b.textContent = TDE[t]||t; b.style.background = TC[t]||"#999";
+  b.addEventListener("click", () => {
+    activeType = activeType===t ? "" : t;
+    document.querySelectorAll(".tpill").forEach(x => x.classList.toggle("on", x.dataset.t===activeType));
+    rebuild();
+  });
+  typeRow.appendChild(b);
+});
+
+/* ── State ── */
+let activeType="", activeGen="", activeSort="id", searchQ="";
+let filtered = [];
+
+const inputQ = document.getElementById("q");
+const selectGen = document.getElementById("gen");
+const selectSrt = document.getElementById("srt");
+const btnReset = document.getElementById("btn-reset");
+
+inputQ.addEventListener("input",  e => { searchQ=e.target.value; rebuild(); });
+selectGen.addEventListener("change",e => { activeGen=e.target.value; rebuild(); });
+selectSrt.addEventListener("change",e => { activeSort=e.target.value; rebuild(); });
+
+// Reset-Knopf Logik
+btnReset.addEventListener("click", () => {
+  if (!btnReset.classList.contains("active")) return;
+  
+  // States zurücksetzen
+  searchQ = "";
+  activeGen = "";
+  activeType = "";
+  
+  // DOM-Elemente zurücksetzen
+  inputQ.value = "";
+  selectGen.value = "";
+  document.querySelectorAll(".tpill").forEach(x => x.classList.remove("on"));
+  
+  rebuild();
+});
+
+function rebuild() {
+  const q = searchQ.trim().toLowerCase();
+  
+  // Prüfen, ob irgendein Filter aktiv ist, um den Reset-Knopf zu steuern
+  if (q || activeGen || activeType) {
+    btnReset.classList.add("active");
+  } else {
+    btnReset.classList.remove("active");
+  }
+
+  filtered = DATA.filter(p => {
+    if (q) {
+      const ok = p.d.toLowerCase().includes(q) || p.e.toLowerCase().includes(q)
+               || String(p.i).includes(q) || String(p.i).padStart(4,"0").includes(q);
+      if (!ok) return false;
+    }
+    if (activeType && !p.t.includes(activeType)) return false;
+    if (activeGen) {
+      const [lo,hi]=GEN[activeGen];
+      if (p.i<lo||p.i>hi) return false;
+    }
+    return true;
+  });
+  if (activeSort==="name") filtered.sort((a,b)=>a.d.localeCompare(b.d,"de"));
+  else                      filtered.sort((a,b)=>a.i-b.i);
+
+  document.getElementById("res-bar").textContent =
+    filtered.length===DATA.length ? `${DATA.length} Pokémon`
+    : `${filtered.length} von ${DATA.length} Pokémon`;
+  document.getElementById("no-res").style.display = filtered.length ? "none" : "block";
+
+  vScroll.reset();
+}
+
+/* ── Virtual scroll ── */
+const vScroll = (() => {
+  const wrap   = document.getElementById("scroll-wrap");
+  const spacer = document.getElementById("spacer");
+  const grid   = document.getElementById("visible-grid");
+
+  // card height estimate — recalculated after first render
+  let CARD_H   = 220;
+  let COLS     = 3;
+  let startRow = 0;
+
+  function getCols() {
+    const w = wrap.clientWidth;
+    if (w < 380) return 1;
+    if (w < 600) return 2;
+    return 3;
+  }
+
+  function cardHTML(p) {
+    const c1 = TC[p.t[0]]||"#999";
+    const badges = p.t.map(t=>`<span class="tbadge" style="background:${TC[t]||"#999"}">${TDE[t]||t}</span>`).join("");
+    const img = p.b
+      ? `<img class="card-img" src="${p.b}" alt="${p.d}" loading="lazy">`
+      : `<div style="width:110px;height:110px;display:flex;align-items:center;justify-content:center;font-size:2.5rem">❓</div>`;
+    return `<div class="card" style="background:linear-gradient(150deg,${c1}1a 0%,var(--surface) 55%)">
+      <span class="card-num">#${String(p.i).padStart(4,"0")}</span>
+      ${img}
+      <span class="card-name">${p.d}</span>
+      <div class="card-types">${badges}</div>
+    </div>`;
+  }
+
+  // How many rows fit in 2× viewport
+  function rowsVisible() {
+    return Math.ceil((window.innerHeight * 2.5) / CARD_H);
+  }
+
+  function render(scrollTop) {
+    COLS = getCols();
+    const totalRows = Math.ceil(filtered.length / COLS);
+    const totalH    = totalRows * (CARD_H + 12);
+    spacer.style.height = totalH + "px";
+
+    const firstRow  = Math.max(0, Math.floor(scrollTop / (CARD_H+12)) - 2);
+    const lastRow   = Math.min(totalRows-1, firstRow + rowsVisible());
+
+    if (firstRow === startRow && grid.children.length > 0) return; // no change
+    startRow = firstRow;
+
+    const firstIdx = firstRow * COLS;
+    const lastIdx  = Math.min(filtered.length-1, (lastRow+1)*COLS - 1);
+
+    grid.style.top = (firstRow * (CARD_H+12)) + "px";
+    grid.style.gridTemplateColumns = `repeat(${COLS},1fr)`;
+
+    let html = "";
+    for (let i=firstIdx; i<=lastIdx; i++) html += cardHTML(filtered[i]);
+    grid.innerHTML = html;
+
+    // Calibrate card height from real DOM
+    if (grid.firstChild) {
+      const rh = grid.firstChild.getBoundingClientRect().height;
+      if (rh > 10) CARD_H = rh;
+    }
+  }
+
+  function reset() {
+    startRow = -1;
+    wrap.scrollTop = 0;
+    window.scrollTo(0,0);
+    render(0);
+  }
+
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (!ticking) { requestAnimationFrame(() => { render(window.scrollY); ticking=false; }); ticking=true; }
+  });
+  window.addEventListener("resize", () => render(window.scrollY));
+
+  return { reset };
+})();
+
+rebuild();
+</script>
+</body>
+</html>

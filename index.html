@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Escape Room – Abistreich</title>
+<style>
+:root {
+  --bg: #f4f6f4;
+  --panel: #ffffff;
+  --card: #ffffff;
+  --accent: #3a8f3a;
+  --accent2: #2d7a2d;
+  --navy: #1a3a6b;
+  --navy2: #122d56;
+  --text: #111111;
+  --muted: #666666;
+  --border: #5aaa5a;
+  --border-light: #e0e0e0;
+  --success: #2d8a2d;
+  --radius: 0px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ── LOGO ── */
+#school-logo {
+  height: clamp(28px, 4vw, 36px);
+  width: auto;
+  opacity: 0.92;
+}
+
+/* ── TOP BAR ── */
+#top-bar {
+  background: #ffffff;
+  border-bottom: 3px solid var(--accent);
+  padding: clamp(8px, 1.5vw, 10px) clamp(14px, 3vw, 24px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+#game-title {
+  font-size: clamp(12px, 1.8vw, 15px);
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--navy);
+  text-transform: uppercase;
+}
+#timer-wrap { display: flex; align-items: center; gap: 10px; }
+#timer-label {
+  font-size: clamp(9px, 1.3vw, 11px);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+#timer {
+  font-size: clamp(20px, 3.2vw, 28px);
+  font-weight: 700;
+  font-family: monospace;
+  color: var(--navy);
+  letter-spacing: 3px;
+  min-width: 80px;
+  background: #f0f4ff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1.5px solid #c0cce8;
+}
+
+/* ── MAIN LAYOUT ── */
+#main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── PUZZLE AREA (left) ── */
+#puzzle-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: clamp(10px, 2vw, 20px);
+  gap: clamp(8px, 1.5vw, 14px);
+  min-width: 0;
+}
+
+#puzzle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+#puzzle-title {
+  font-size: clamp(18px, 2.8vw, 26px);
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: 0px;
+}
+#puzzle-counter {
+  font-size: clamp(11px, 1.6vw, 13px);
+  color: #ffffff;
+  background: var(--success);
+  border: 2px solid var(--accent2);
+  padding: 5px 14px 5px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+#puzzle-counter .counter-dot {
+  width: clamp(18px, 2.4vw, 22px);
+  height: clamp(18px, 2.4vw, 22px);
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(11px, 1.5vw, 13px);
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+#puzzle-card {
+  background: var(--card);
+  border: 1px solid #e8e8e8;
+  border-radius: 0px;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+#puzzle-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: clamp(12px, 2.5vw, 20px) clamp(14px, 4vw, 32px) clamp(10px, 2vw, 12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 2vw, 16px);
+  min-height: 0;
+}
+
+#answer-bar {
+  padding: clamp(8px, 1.5vw, 10px) clamp(14px, 3vw, 24px);
+  background: #f8f8f8;
+  border-top: 1px solid #e8e8e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+#puzzle-question {
+  font-size: clamp(18px, 2.6vw, 24px);
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-wrap;
+  font-weight: 500;
+  width: 100%;
+  text-align: center;
+}
+
+/* Media area */
+#puzzle-media {
+  border-radius: 0px;
+  background: transparent;
+  border: none;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  /* Garantierte Mindesthöhe fürs Rätselbild: schrumpft auf engen
+     Bildschirmen (z.B. Schul-Laptops 1366×768) NIE auf fast nichts.
+     Reicht der Platz nicht, scrollt stattdessen #puzzle-content.
+     Das Bild ist das wichtigste Element auf dem Bildschirm, deshalb
+     bekommt es hier bewusst großzügig Raum. */
+  min-height: clamp(160px, 32vh, 420px);
+  width: 100%;
+  color: var(--muted);
+  font-size: 13px;
+}
+.media-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+#puzzle-media img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+#puzzle-media video {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+#puzzle-media audio {
+  width: 100%;
+}
+
+/* ── MUSIK-RÄTSEL: Note + Klaviertasten ── */
+.music-puzzle-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 3vw, 28px);
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+.melody-note-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(90px, 14vw, 140px);
+  height: clamp(90px, 14vw, 140px);
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy), var(--navy2));
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(26,58,107,0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+.melody-note-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 22px rgba(26,58,107,0.45);
+}
+.melody-note-btn:active { transform: scale(0.97); }
+.melody-note-btn svg { width: 52%; height: 52%; }
+.melody-note-label {
+  font-size: clamp(14px, 1.8vw, 17px);
+  color: var(--navy);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+/* WICHTIG: Selector hier bewusst "#puzzle-media .melody-audio-player" (nicht nur
+   .melody-audio-player) — sonst gewinnt die generische Regel "#puzzle-media audio"
+   weiter oben per CSS-Spezifität (ID schlägt Klasse) und die feste Breite/Höhe greift
+   NICHT. Das war der Grund, warum der Melodie-Player auf dem iPad winzig und kaum
+   zum Wischen breit genug dargestellt wurde. */
+#puzzle-media .melody-audio-player {
+  width: min(480px, 92%);
+  max-width: 100%;
+  height: 46px;
+  margin-top: 0;
+}
+.piano-wrap {
+  position: relative;
+  display: flex;
+  height: clamp(100px, 16vw, 180px);
+  width: 100%;
+  max-width: 700px;
+  justify-content: center;
+  margin: 0 auto;
+}
+.piano-key {
+  position: relative;
+  border: 1.5px solid #999;
+  border-radius: 0 0 8px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: clamp(6px, 1vw, 10px);
+  font-size: clamp(15px, 2vw, 20px);
+  font-weight: 900;
+  font-family: monospace;
+  transition: background 0.1s, transform 0.05s;
+  user-select: none;
+}
+.piano-key.white {
+  width: clamp(42px, 6vw, 70px);
+  height: clamp(100px, 16vw, 180px);
+  background: #ffffff;
+  color: #222;
+  z-index: 1;
+}
+.piano-key.white:hover { background: #f0f0f0; }
+.piano-key.white:active, .piano-key.white.playing {
+  background: #e0eaff;
+  transform: translateY(2px);
+}
+.piano-key.black {
+  width: clamp(26px, 3.6vw, 42px);
+  height: clamp(62px, 10vw, 112px);
+  background: #1a1a1a;
+  color: #fff;
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  border-radius: 0 0 5px 5px;
+  margin: 0;
+  font-size: clamp(12px, 1.6vw, 16px);
+}
+.piano-key.black:hover { background: #333; }
+.piano-key.black:active, .piano-key.black.playing {
+  background: #444;
+  transform: translateY(2px);
+}
+
+/* Answer input – am unteren Rand */
+#answer-row {
+  display: none;
+}
+#answer-input {
+  width: min(280px, 70vw);
+  background: #ffffff;
+  border: 1.5px solid #aaaaaa;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: clamp(15px, 2vw, 16px);
+  padding: clamp(9px, 1.5vw, 8px) 14px;
+  outline: none;
+  transition: border 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-family: Arial, monospace;
+  font-weight: 700;
+  text-align: center;
+}
+#answer-input:focus {
+  border-color: #888888;
+}
+#answer-input:focus {
+  border-color: var(--accent);
+}
+#answer-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+#check-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: clamp(18px, 2.4vw, 20px);
+  font-weight: 700;
+  width: clamp(42px, 5vw, 46px);
+  height: clamp(42px, 5vw, 46px);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+#check-btn:hover { background: var(--accent2); }
+#check-btn:active { transform: scale(0.95); }
+
+#feedback {
+  font-size: clamp(13px, 1.8vw, 14px);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: normal;
+  text-align: center;
+}
+
+/* Navigation bar */
+#nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 8px;
+}
+.nav-btn {
+  background: var(--navy);
+  border: none;
+  border-radius: 20px;
+  color: #fff;
+  font-size: clamp(13px, 1.8vw, 14px);
+  padding: clamp(10px, 1.6vw, 9px) clamp(16px, 3vw, 22px);
+  cursor: pointer;
+  transition: background 0.2s;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.nav-btn:hover { background: var(--navy2); }
+#nav-center {
+  font-size: clamp(11px, 1.5vw, 13px);
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── SIDEBAR (right) ──────────────────────────────────────────
+   Einklappbar: Das Rätselbild ist das Wichtigste auf dem Bildschirm,
+   die Sidebar darf bei Bedarf zugunsten von mehr Platz fürs Bild und
+   die Frage verschwinden (Toggle-Button "#sidebar-toggle-btn" oben
+   in der Kopfzeile). body.sidebar-collapsed klappt sie auf normal
+   breiten Bildschirmen (Laptop/iPad quer) komplett ein. ────────── */
+#sidebar {
+  width: clamp(190px, 19vw, 250px);
+  background: var(--panel);
+  border-left: 1.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: clamp(10px, 1.6vw, 16px);
+  gap: 0;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  flex-shrink: 0;
+  transition: width 0.22s ease, padding 0.22s ease, opacity 0.18s ease, border-color 0.22s ease;
+
+  background: #ffffff;
+}
+body.sidebar-collapsed #sidebar {
+  width: 0;
+  min-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  opacity: 0;
+  border-left-color: transparent;
+  pointer-events: none;
+}
+
+.sidebar-section-label {
+  font-size: clamp(9px, 1.2vw, 10px);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  border-bottom: 1.5px solid var(--border);
+  padding-bottom: 8px;
+  font-weight: 700;
+}
+
+#puzzle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-bottom: 8px;
+}
+#sidebar-bottom {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1.5px solid var(--border);
+  padding-top: 12px;
+  margin-top: 8px;
+}
+
+.puzzle-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: clamp(8px, 1.3vw, 9px) 10px;
+  border-radius: 0px;
+  border: 1px solid #e0e0e0;
+  border-left: 3px solid transparent;
+  background: #ffffff;
+  cursor: pointer;
+  transition: border 0.2s, background 0.2s;
+  font-size: clamp(11px, 1.4vw, 12px);
+  user-select: none;
+}
+.puzzle-item:hover { border-left-color: var(--accent); background: #f5fff5; }
+.puzzle-item.active { border-left-color: var(--navy); border-color: #d0d8f0; background: #f0f4ff; }
+.puzzle-item.solved { border-left-color: var(--success); border-color: #c0e0c0; background: #f0fff0; }
+
+.puzzle-dot {
+  width: clamp(26px, 3.2vw, 30px);
+  height: clamp(26px, 3.2vw, 30px);
+  border-radius: 50%;
+  background: #7BC14F;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(12px, 1.5vw, 13px);
+  font-weight: 900;
+  flex-shrink: 0;
+  transition: all 0.3s;
+  color: #ffffff;
+}
+.puzzle-item.solved .puzzle-dot { background: var(--success); color: #fff; }
+.puzzle-item.active .puzzle-dot { background: var(--navy); color: #fff; }
+
+.puzzle-item-name {
+  flex: 1;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  font-weight: 500;
+}
+.puzzle-item.solved .puzzle-item-name { color: var(--success); font-weight: 700; }
+.puzzle-item.active .puzzle-item-name { color: var(--navy); font-weight: 700; }
+
+/* Solution word */
+#solution-section { flex-shrink: 0; }
+#solution-word {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.sol-letter {
+  width: clamp(24px, 3vw, 30px);
+  height: clamp(28px, 3.4vw, 34px);
+  background: #ffffff;
+  border: 2px solid var(--border);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(13px, 1.7vw, 15px);
+  font-weight: 700;
+  color: var(--muted);
+  transition: all 0.4s;
+  font-family: monospace;
+}
+.sol-letter.revealed {
+  background: rgba(45,138,45,0.12);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+/* Final input */
+#final-input-section {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1.5px solid var(--border);
+  padding-top: 12px;
+  flex-shrink: 0;
+}
+#final-input-section.visible { display: flex; }
+#final-label {
+  font-size: clamp(9px, 1.2vw, 10px);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  font-weight: 700;
+}
+#final-input {
+  background: #ffffff;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: clamp(13px, 1.6vw, 14px);
+  padding: clamp(8px, 1.3vw, 9px) 10px;
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: monospace;
+  transition: border 0.2s;
+  font-weight: 700;
+  text-align: center;
+}
+#final-input:focus { border-color: var(--navy); }
+#final-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: 20px;
+  color: #fff;
+  font-size: clamp(12px, 1.5vw, 13px);
+  font-weight: 700;
+  padding: clamp(9px, 1.4vw, 10px);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: background 0.2s;
+}
+#final-btn:hover { background: var(--accent2); }
+#final-feedback {
+  font-size: clamp(11px, 1.4vw, 12px);
+  min-height: 16px;
+  color: #c0392b;
+  font-weight: 700;
+}
+
+/* ── SIDEBAR LOGO ── */
+#sidebar-logo-wrap {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1.5px solid var(--border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#sidebar-logo {
+  width: clamp(56px, 7vw, 80px);
+  height: auto;
+  opacity: 0.85;
+}
+
+/* ── WIN OVERLAY ── */
+#win-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(26,58,107,0.92);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: clamp(14px, 2.5vw, 20px);
+  z-index: 100;
+  text-align: center;
+  padding: clamp(20px, 4vw, 40px);
+}
+#win-overlay.show { display: flex; }
+#win-emoji { font-size: clamp(44px, 7vw, 64px); }
+#win-title {
+  font-size: clamp(26px, 4.5vw, 40px);
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  border-bottom: 3px solid var(--accent);
+  padding-bottom: 12px;
+}
+#win-time {
+  font-size: clamp(18px, 3vw, 26px);
+  color: #ffffff;
+  font-family: monospace;
+  background: rgba(255,255,255,0.15);
+  padding: 10px 28px;
+  border-radius: 6px;
+}
+#win-sub {
+  font-size: clamp(14px, 2vw, 16px);
+  color: rgba(255,255,255,0.8);
+  max-width: 420px;
+  line-height: 1.7;
+}
+#reset-btn {
+  margin-top: 10px;
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.4);
+  border-radius: 8px;
+  color: #fff;
+  font-size: clamp(12px, 1.6vw, 13px);
+  padding: clamp(9px, 1.5vw, 10px) clamp(18px, 3vw, 24px);
+  cursor: pointer;
+  transition: background 0.2s;
+  font-weight: 600;
+}
+#reset-btn:hover { background: rgba(255,255,255,0.25); }
+
+/* ── TITELSEITE ── */
+#title-screen-1, #title-screen-2 {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  cursor: pointer;
+}
+#title-screen-1.hidden, #title-screen-2.hidden { display: none; }
+#title-image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40%;
+  height: 40%;
+}
+#title-image-wrap img {
+  max-width: 90%;
+  max-height: 90%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* ── ÜBERSICHTSSEITE (Seite 3) ── */
+#title-screen-3 {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 199;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#title-screen-3.hidden { display: none; }
+#overview-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 10px;
+  padding: 14px;
+  overflow: hidden;
+}
+.overview-cell {
+  background: var(--card);
+  border: 2px solid var(--border-light);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  position: relative;
+}
+.overview-cell:hover {
+  border-color: var(--accent);
+  transform: scale(1.02);
+  box-shadow: 0 4px 14px rgba(58,143,58,0.18);
+  z-index: 2;
+}
+.overview-cell:active { transform: scale(0.98); }
+.overview-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.overview-cell-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #e8e8e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(20px, 3vw, 28px);
+  color: #aaa;
+}
+.overview-cell-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(26,58,107,0.82);
+  color: #fff;
+  font-size: clamp(10px, 1.4vw, 11px);
+  font-weight: 700;
+  text-align: center;
+  padding: 4px 6px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* ── GRUPPEN in Sidebar ── */
+.gruppe-header {
+  font-size: clamp(9px, 1.2vw, 10px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  padding: 10px 6px 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+.gruppe-header:first-child { border-top: none; margin-top: 0; }
+.gruppe-header .gruppe-badge {
+  font-size: 9px;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 7px;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+.gruppe-header .gruppe-badge.done {
+  background: var(--success);
+}
+.gruppe-items { display: flex; flex-direction: column; gap: 4px; }
+.gruppe-items.collapsed { display: none; }
+
+/* Fortschrittsbalken in der Gruppe */
+.gruppe-progress {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 2px 6px 6px;
+  overflow: hidden;
+}
+.gruppe-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s;
+}
+
+/* Sub-Nummerierung im Puzzle-Titel */
+#puzzle-sub-info {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+
+/* Buchstabe gesperrt-Hinweis */
+#buchstabe-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+  font-style: italic;
+}
+#volume-btn {
+  background: #f0f4ff;
+  border: 1.5px solid #c0cce8;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  transition: background 0.15s;
+  line-height: 1;
+  color: var(--navy);
+  min-width: 42px;
+  display: none; /* Wird erst nach Spielstart eingeblendet */
+}
+#volume-btn:hover { background: #dce4fa; }
+
+#sidebar-toggle-btn {
+  background: #f0f4ff;
+  border: 1.5px solid #c0cce8;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  line-height: 1;
+  color: var(--navy);
+  min-width: 42px;
+  flex-shrink: 0;
+}
+#sidebar-toggle-btn:hover { background: #dce4fa; }
+#sidebar-toggle-btn.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #ffffff;
+}
+
+/* Abdunklung hinter der Sidebar, wenn sie auf schmalen Bildschirmen
+   (Handy-Format) als Schublade über dem Inhalt eingeblendet wird. */
+#sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 20, 40, 0.45);
+  z-index: 60;
+}
+body.sidebar-open #sidebar-backdrop {
+  display: block;
+}
+
+/* ════════════════════════════════════════════════════════════
+   IPAD-OPTIMIERUNG
+   Das Rätselbild (#puzzle-media img/video, .piano-key, etc.) wird
+   NICHT verändert — nur Text, Buttons, Sidebar und Abstände werden
+   an typische iPad-Bildschirme angepasst.
+   ════════════════════════════════════════════════════════════ */
+
+/* iPad Querformat (z.B. 1024×768, 1112×834, 1180×820) */
+@media (max-width: 1112px) {
+  #sidebar {
+    width: clamp(170px, 21vw, 220px);
+  }
+  .puzzle-item-name {
+    white-space: normal;
+    line-height: 1.25;
+  }
+  #puzzle-title { font-size: clamp(17px, 2.6vw, 24px); }
+  #puzzle-question { font-size: clamp(16px, 2.3vw, 21px); }
+}
+
+/* iPad Hochformat (z.B. 768×1024, 834×1194, 810×1080) */
+@media (max-width: 834px) {
+  #top-bar { padding: 8px 14px; }
+  #game-title { font-size: 12px; letter-spacing: 1px; }
+  #timer { font-size: 20px; min-width: 70px; }
+
+  #puzzle-area { padding: 10px; gap: 8px; }
+  #puzzle-header { gap: 4px; }
+  #puzzle-title { font-size: 18px; }
+  #puzzle-sub-info { font-size: 11px; }
+  #puzzle-counter { font-size: 11px; padding: 4px 10px 4px 6px; }
+
+  #puzzle-content { padding: 12px 14px 10px; gap: 10px; }
+  #puzzle-question { font-size: 17px; line-height: 1.55; }
+
+  #answer-bar { padding: 8px 10px; gap: 8px; }
+  #answer-input { width: min(260px, 62vw); font-size: 16px; padding: 11px 14px; }
+  #check-btn { width: 46px; height: 46px; font-size: 20px; }
+
+  .nav-btn { font-size: 13px; padding: 11px 16px; }
+  #nav-center { font-size: 11px; }
+
+  #sidebar {
+    width: clamp(150px, 24vw, 190px);
+    padding: 10px;
+  }
+  .sidebar-section-label { font-size: 9px; }
+  .puzzle-item { font-size: 11px; padding: 8px; gap: 6px; }
+  .puzzle-dot { width: 24px; height: 24px; font-size: 11px; }
+  .gruppe-header { font-size: 9px; padding: 8px 4px 3px; }
+  .gruppe-header .gruppe-badge { font-size: 8px; }
+
+  .sol-letter { width: 22px; height: 26px; font-size: 12px; }
+  #final-input { font-size: 13px; padding: 10px 8px; }
+  #final-btn { font-size: 12px; padding: 11px; }
+  #sidebar-logo { width: 48px; }
+
+  /* Musik-Rätsel: Note + Tasten zusätzlich verkleinern, Bild bleibt unberührt */
+  .melody-note-btn { width: clamp(72px, 18vw, 100px); height: clamp(72px, 18vw, 100px); }
+  #puzzle-media .melody-audio-player { width: min(440px, 90vw); height: 44px; }
+  .piano-key.white { width: clamp(36px, 9vw, 52px); height: clamp(86px, 22vw, 130px); }
+  .piano-key.black { width: clamp(22px, 5.5vw, 32px); height: clamp(54px, 13vw, 82px); }
+  .piano-key { font-size: clamp(13px, 3.4vw, 16px); }
+}
+
+/* Sehr schmales iPad Hochformat (z.B. Mini im Hochformat ~744px) */
+@media (max-width: 760px) {
+  #sidebar { width: 140px; padding: 8px; }
+  .puzzle-item-name { font-size: 10.5px; }
+}
+
+/* ════════════════════════════════════════════════════════════
+   SCHUL-LAPTOP-OPTIMIERUNG (z.B. 1366×768, 1280×800, 1280×720)
+   Diese Geräte sind oft so BREIT wie ein normaler Monitor, aber
+   deutlich NIEDRIGER — vor allem, wenn der Browser noch Adress-
+   und Lesezeichenleiste zeigt, bleiben oft nur ~600px Höhe übrig.
+   Die obigen iPad-Regeln greifen hier NICHT, da sie nur auf die
+   BREITE reagieren. Hier wird stattdessen auf die HÖHE reagiert:
+   Kopf-, Antwort- und Navigationsbereich werden kompakter, damit
+   maximal viel Platz für #puzzle-media (das Rätselbild) übrig
+   bleibt. Reicht es bei sehr langen Rätseltexten trotzdem nicht,
+   bekommt #puzzle-content automatisch einen Scrollbalken statt
+   das Bild zu verkleinern (siehe min-height bei #puzzle-media).
+   ════════════════════════════════════════════════════════════ */
+@media (max-height: 820px) {
+  #top-bar { padding: 5px 16px; }
+  #school-logo { height: 24px; }
+  #game-title { font-size: 11px; letter-spacing: 1px; }
+  #timer { font-size: 18px; min-width: 64px; padding: 3px 10px; letter-spacing: 2px; }
+
+  #puzzle-area { padding: 8px 16px; gap: 6px; }
+  #puzzle-header { gap: 4px; }
+  #puzzle-title { font-size: clamp(15px, 2.2vw, 20px); }
+  #puzzle-sub-info { font-size: 10px; margin-bottom: 2px; }
+  #puzzle-counter { font-size: 10px; padding: 3px 10px 3px 6px; }
+  #puzzle-counter .counter-dot { width: 16px; height: 16px; font-size: 10px; }
+
+  #puzzle-content { padding: 8px 18px 6px; gap: 6px; }
+  #puzzle-question { font-size: clamp(13px, 1.6vw, 17px); line-height: 1.35; }
+  #feedback { font-size: 12px; }
+  #buchstabe-hint { font-size: 10px; margin-top: 4px; }
+
+  #answer-bar { padding: 6px 14px; gap: 8px; }
+  #answer-input { padding: 7px 12px; font-size: 14px; }
+  #check-btn { width: 36px; height: 36px; font-size: 15px; }
+
+  .nav-btn { padding: 6px 16px; font-size: 12px; }
+  #nav-center { font-size: 10px; }
+
+  #sidebar { padding: 8px; }
+  .sidebar-section-label { padding-bottom: 4px; }
+  .puzzle-item { padding: 5px 8px; gap: 6px; }
+  .puzzle-dot { width: 20px; height: 20px; font-size: 10px; }
+  .gruppe-header { padding: 6px 4px 2px; margin-top: 2px; }
+  .gruppe-progress { margin: 1px 6px 4px; }
+  .sol-letter { width: 20px; height: 22px; font-size: 11px; }
+  #final-input-section { padding-top: 8px; gap: 6px; }
+  #sidebar-logo { width: 40px; }
+  #sidebar-logo-wrap { padding-top: 8px; }
+
+  /* Musik-Rätsel: Note + Klaviatur an die Höhe statt an die Breite koppeln,
+     damit sie auf einem breiten, aber niedrigen Bildschirm nicht überlaufen */
+  .music-puzzle-wrap { gap: 10px; }
+  .melody-note-btn { width: clamp(56px, 9vh, 84px); height: clamp(56px, 9vh, 84px); }
+  #puzzle-media .melody-audio-player { height: 40px; margin-top: 0; }
+  .piano-wrap { height: clamp(80px, 18vh, 140px); }
+  .piano-key.white { height: clamp(80px, 18vh, 140px); }
+  .piano-key.black { height: clamp(48px, 11vh, 88px); }
+
+  /* Übersichtsseite (Seite 3): Raster etwas kompakter */
+  #overview-grid { gap: 6px; padding: 8px; }
+  .overview-cell-label { font-size: 9px; padding: 3px 5px; }
+}
+
+/* ════════════════════════════════════════════════════════════
+   HANDY-OPTIMIERUNG (sehr schmale Bildschirme, z.B. Smartphone im
+   Hochformat). Die Sidebar wird hier zu einer ausklappbaren
+   Schublade (statt fest Platz wegzunehmen), damit Rätselbild und
+   Frage — die wichtigsten Elemente — immer die volle Breite haben.
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 700px) {
+  #sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: min(86vw, 320px) !important;
+    min-width: 0;
+    max-width: 86vw;
+    padding: clamp(12px, 4vw, 18px) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    border-left: none;
+    box-shadow: -8px 0 28px rgba(0,0,0,0.28);
+    z-index: 70;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+  }
+  body.sidebar-open #sidebar {
+    transform: translateX(0);
+  }
+
+  /* Rätselbild + Frage bekommen Vorrang vor allem anderen */
+  #puzzle-media { min-height: clamp(160px, 38vh, 420px); }
+  #puzzle-question { font-size: clamp(16px, 4.6vw, 19px); line-height: 1.45; }
+  #puzzle-title { font-size: clamp(16px, 4.8vw, 20px); }
+  #puzzle-area { padding: 8px 12px; gap: 6px; }
+  #answer-input { width: min(230px, 58vw); }
+  #game-title { letter-spacing: 0.5px; }
+
+  #overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     KONFIGURATION — NUR DIESEN BEREICH BEARBEITEN
+     ════════════════════════════════════════════════════════ -->
+<script>
+
+/* ── SPIELTITEL ── */
+const SPIELTITEL = "Escape Room – Abistreich 2026";
+
+/* ── TITELSEITE ─────────────────────────────────────────────────
+   Bild in der Mitte der Titelseite (Pfad oder URL).
+   Leer lassen ("") wenn kein Bild gewünscht.
+────────────────────────────────────────────────────────────── */
+const TITEL_BILD = "media/büwie.webp";   // z.B. "media/logo.webp" oder "https://..."
+
+/* ── ÜBERSICHTSSEITE (Seite 3) ──────────────────────────────────
+   12 Bilder für die Rätselübersicht — je eins pro Rätselgruppe.
+   Reihenfolge = Anzeigereihenfolge im 3×4 Raster (links→rechts, oben→unten).
+   Leer lassen ("") für einen grauen Platzhalter.
+   Der Timer startet erst, sobald die Übersichtsseite verlassen wird.
+────────────────────────────────────────────────────────────── */
+const UEBERSICHT_BILDER = [
+  { bild: "media/deutschland.webp",   label: "Flaggen-Rätsel"    },
+  { bild: "media/pfoten.webp",        label: "Kinder-Rätsel"     },
+  { bild: "media/turnhalle.webp",     label: "Wo ist-Rätsel"     },
+  { bild: "media/korea.webp",         label: "Korea-Rätsel"      },
+  { bild: "media/usa.webp",           label: "Geoguessr-Rätsel"  },
+  { bild: "media/nether.webp",        label: "Minecraft-Rätsel"  },
+  { bild: "media/pikachu.webp",       label: "Pokémon-Rätsel"    },
+  { bild: "media/beethoven.webp",     label: "Musik-Rätsel"      },
+  { bild: "media/merz.webp",          label: "Personen-Rätsel"   },
+  { bild: "media/a4_liniert.webp",    label: "Papier-Rätsel"     },
+  { bild: "media/morse_legende.webp", label: "Morse-Rätsel"      },
+  { bild: "media/schach1.webp",       label: "Schach-Rätsel"     },
+];
+
+/* ── AUDIO AUF DER TITELSEITE ──────────────────────────────────
+   Pfad zur Audiodatei. Leer lassen ("") wenn keine Audio gewünscht.
+────────────────────────────────────────────────────────────── */
+const TITEL_AUDIO = "media/title.m4a";  // z.B. "media/intro.mp3"
+const MAIN_AUDIO = "media/dark.m4a";
+
+/* ── GEWINN-OVERLAY TEXTE ──────────────────────────────────────
+   Der Text der erscheint, wenn das finale Lösungswort eingegeben wird.
+────────────────────────────────────────────────────────────── */
+const GEWINN_EMOJI  = "🎉";
+const GEWINN_TITEL  = "Entkommen!";
+const GEWINN_TEXT   = "Ihr habt alle Rätsel gelöst – herzlichen Glückwunsch!<br> Ihr seid jetzt frei. Genießt die Zeit in der Schule und habt Spaß. Draußen warten schon alle!";
+
+/* ── RÄTSEL-LISTE ──────────────────────────────────────────────
+   Jedes Rätsel ist ein Objekt mit folgenden Feldern:
+
+   titel     → Name des Rätsels (erscheint oben rechts und in der Übersicht)
+   text      → Aufgabenstellung / Fragestellung (Zeilenumbrüche mit \n möglich)
+   media     → optional: Pfad zu Bild, Video oder Audio
+                  Bild:  "bilder/meinbild.jpg"
+                  Video: "videos/meinvideo.mp4"
+                  Audio: "audio/meinton.mp3"
+                  Kein Medium: null
+   loesung   → die erwartete Antwort (Groß-/Kleinschreibung wird ignoriert)
+   buchstabe → der Buchstabe, der zum Lösungswort beiträgt
+
+   NEUES RÄTSEL HINZUFÜGEN: Einfach einen neuen Block kopieren und einfügen.
+   Die Reihenfolge der Buchstaben ergibt das Lösungswort.
+────────────────────────────────────────────────────────────── */
+const RAETSEL = [
+  {
+    gruppe: "Flaggen-Rätsel",
+    titel: "Flaggen-Rätsel ",
+    text: "Welches Land hat diese Flagge?",
+    media: "media/deutschland.webp",
+    loesung: "DEUTSCHLAND",
+    buchstabe: "A"
+  },
+  {
+    gruppe: "Flaggen-Rätsel",
+    titel: "Flaggen-Rätsel ",
+    text: "Welches Land hat diese Flagge?",
+    media: "media/litauen.webp",
+    loesung: "LITAUEN",
+    buchstabe: "A"
+  },
+  {
+    gruppe: "Flaggen-Rätsel",
+    titel: "Flaggen-Rätsel ",
+    text: "Welches Land hat diese Flagge?",
+    media: "media/indonesien.webp",
+    loesung: "INDONESIEN",
+    buchstabe: "A"
+  },
+  {
+    gruppe: "Flaggen-Rätsel",
+    titel: "Flaggen-Rätsel ",
+    text: "Welches Land hat diese Flagge?",
+    media: "media/curacao.webp",
+    loesung: "CURACAO",
+    buchstabe: "A"
+  },
+  {
+    gruppe: "Flaggen-Rätsel",
+    titel: "Flaggen-Rätsel ",
+    text: "Welches Land hat diese Flagge?",
+    media: "media/elfenbeinküste.webp",
+    loesung: "ELFENBEINKÜSTE",
+    buchstabe: "A"
+  },
+  {
+    gruppe: "Kinder-Rätsel",
+    titel: "Pfoten-Rätsel",
+    text: "Welches Tier geht wohin?<br>Reihenfolge von 1-7 ohne Leerzeichen",
+    media: "media/pfoten.webp",
+    loesung: "EBCAGFD",
+    buchstabe: "L"
+  },
+  {
+    gruppe: "Kinder-Rätsel",
+    titel: "Gedicht-Rätsel",
+    text: "Was ist 'es'?<br><br><br>Rätselgedicht: Wenn Du es sagtest<br><br>Wenn du es sagtest, wärest du nicht klug,<br>wenn du es hättest,wär's mehr als genug,<br>wenn du's entbehrtest,wärst du nicht glücklich,<br>wenn du es wünschtest,wär's nicht schicklich,<br>wenn du es glaubtest,wärst du zum Spott,<br>wenn du es könntest, wärst du ein Gott.<br> <br>von Franz Brentano",
+    media: "",
+    loesung: "ALLES",
+    buchstabe: "L"
+  },
+  {
+    gruppe: "Kinder-Rätsel",
+    titel: "Muster-Rätsel",
+    text: "Welche 2 Figuren sind gleich? Muster: 3und5",
+    media: "media/viereck.webp",
+    loesung: "6und7",
+    buchstabe: "L"
+  },
+  {
+    gruppe: "Wo ist-Rätsel",
+    titel: "Wo ist-Rätsel",
+    text: "Wo ist unser Schuldirektor?",
+    media: "media/turnhalle.webp",
+    loesung: "H3",
+    buchstabe: "I"
+  },
+  {
+    gruppe: "Wo ist-Rätsel",
+    titel: "Wo ist-Rätsel",
+    text: "Wo ist unser Schuldirektor jetzt?",
+    media: "media/luftbild.webp",
+    loesung: "A2",
+    buchstabe: "I"
+  },
+  {
+    gruppe: "Wo ist-Rätsel",
+    titel: "Wo ist-Rätsel",
+    text: "Wo ist unser Schuldirektor jetzt?",
+    media: "media/hof.webp",
+    loesung: "A4",
+    buchstabe: "I"
+  },
+  {
+    gruppe: null,
+    titel: "Korea-Rätsel",
+    text: "K-POP ist voll 대박, aber man versteht leider nicht alles <br> Deshalb ist eure Aufgabe die unten stehenden Symbole zu übersetzen. Die Tabelle kann man nutzen, muss man aber nicht.<br>행운을 빕니다!",
+    media: "media/korea.webp",
+    loesung: "AISEUKEURIM",
+    buchstabe: "P"
+  },
+  {
+    gruppe: "Geoguessr-Rätsel",
+    titel: "Geoguessr-Rätsel ",
+    text: "Welches Land ist das?",
+    media: "media/usa.webp",
+    loesung: "USA",
+    buchstabe: "I"
+  },
+  {
+    gruppe: "Geoguessr-Rätsel",
+    titel: "Geoguessr-Rätsel ",
+    text: "Welches Land ist das?",
+    media: "media/australien.webp",
+    loesung: "AUSTRALIEN",
+    buchstabe: "I"
+  },
+  {
+    gruppe: "Geoguessr-Rätsel",
+    titel: "Geoguessr-Rätsel ",
+    text: "Welches Land ist das?",
+    media: "media/japan.webp",
+    loesung: "JAPAN",
+    buchstabe: "I"
+  },
+  {
+    gruppe: "Minecraft-Rätsel",
+    titel: "Minecraft Rätsel",
+    text: "Das 1.16 Update kam raus und unser Klassen SMP begann. Schule war nebensächlich, aber wann war das noch gleich. <br> In welchem Jahr kam das 1.16 Nether Update offiziell raus?",
+    media: "media/nether.webp",
+    loesung: "2020",
+    buchstabe: "O"
+  },
+  {
+    gruppe: "Minecraft-Rätsel",
+    titel: "Minecraft Rätsel",
+    text: "Jeder Speedrunner hat schon einmal den Fehler gemacht und ist mit 5 Blaze Rods zum Stronghold, nur um zu bemerken das ihnen ein Auge fehlt. Damit euch das nicht passiert und ihr euch 100% sicher sein könnt:<br>Wie viele Enderaugen braucht man, um ein leeres Endportal zu öffnen?",
+    media: "media/endportal.webp",
+    loesung: "12",
+    buchstabe: "O"
+  },
+  {
+    gruppe: "Minecraft-Rätsel",
+    titel: "Minecraft Rätsel ",
+    text: 'Das nächste Bauprojekt steht an, wie ihr seht besteht es aus Eisen: Wie viel Eisenbarren braucht ihr, um alles auf dem Bild zu craften?<br> Also eine komplette Eisenrüstung, 1 Eisentür, 2 Laternen, 1 Amboss, 9 Eisengitter, 61 Eisenblöcke und 1 Eisenschwert',
+    media: "media/iron.webp",
+    loesung: "620",
+    buchstabe: "O"
+  },
+  {
+    gruppe: "Minecraft-Rätsel",
+    titel: "Minecraft Rätsel ",
+    text: "Er farmte die meisten Kartoffeln, kämpfte wie eine Legende und gewann das Duell gegen Dream. HE NEVER DIES. <br> Wie heißt er?",
+    media: "media/technoblade.webp",
+    loesung: "TECHNOBLADE",
+    buchstabe: "O"
+  },
+  {
+    gruppe: "Pokémon-Rätsel",
+    titel: "Pokemon-Rätsel",
+    text: `Ich will der allerbeste sein, Wie keiner vor mir waaaaar. Ganz allein fang ich sie mir,Ich kenne die Gefaaaaaahr.<br>Who is that Pokemon? <a href="media/pokedex.html" target="_blank" style="color:#1a3a6b;font-weight:bold;">Pokedex</a>`,
+    media: "media/pikachu.webp",
+    loesung: "PIKACHU",
+    buchstabe: "B"
+  },
+  {
+    gruppe: "Pokémon-Rätsel",
+    titel: "Pokemon-Rätsel",
+    text: `Ich will der allerbeste sein, Wie keiner vor mir waaaaar. Ganz allein fang ich sie mir,Ich kenne die Gefaaaaaahr.<br>Who is that Pokemon? <a href="media/pokedex.html" target="_blank" style="color:#1a3a6b;font-weight:bold;">Pokedex</a>`,
+    media: "media/enton.webp",
+    loesung: "ENTON",
+    buchstabe: "B"
+  },
+  {
+    gruppe: "Pokémon-Rätsel",
+    titel: "Pokemon-Rätsel",
+    text: `Ich will der allerbeste sein, Wie keiner vor mir waaaaar. Ganz allein fang ich sie mir,Ich kenne die Gefaaaaaahr.<br>Who is that Pokemon? <a href="media/pokedex.html" target="_blank" style="color:#1a3a6b;font-weight:bold;">Pokedex</a>`,
+    media: "media/dragoran.webp",
+    loesung: "DRAGORAN",
+    buchstabe: "B"
+  },
+  {
+    gruppe: "Pokémon-Rätsel",
+    titel: "Pokemon-Rätsel",
+    text: `Ich will der allerbeste sein, Wie keiner vor mir waaaaar. Ganz allein fang ich sie mir,Ich kenne die Gefaaaaaahr.<br>Who is that Pokemon? <a href="media/pokedex.html" target="_blank" style="color:#1a3a6b;font-weight:bold;">Pokedex</a>`,
+    media: "media/relaxo.webp",
+    loesung: "RELAXO",
+    buchstabe: "B"
+  },
+  {
+    gruppe: "Pokémon-Rätsel",
+    titel: "Pokemon-Rätsel",
+    text: `Ich will der allerbeste sein, Wie keiner vor mir waaaaar. Ganz allein fang ich sie mir,Ich kenne die Gefaaaaaahr.<br>Who is that Pokemon? <a href="media/pokedex.html" target="_blank" style="color:#1a3a6b;font-weight:bold;">Pokedex</a>`,
+    media: "media/porenta.webp",
+    loesung: "PORENTA",
+    buchstabe: "B"
+  },
+  {
+    gruppe: "Musik-Rätsel",
+    titel: "Musik Rätsel",
+    text: "Mozart, Bach, Beethoven und jetzt ihr. Nutzt euer absolutes Gehör, probiert aus und schreibt die 11 Noten der Melodie hintereinander auf.",
+    media: [
+      "media/E/melodie.mp3",
+      "media/E/C.mp3",
+      "media/E/D.mp3",
+      "media/E/E.mp3",
+      "media/E/F.mp3",
+      "media/E/G.mp3",
+      "media/E/H.mp3",
+    ],
+    loesung: "CEHHGFEDECC",
+    buchstabe: "Z"
+  },
+  {
+    gruppe: "Personen-Rätsel",
+    titel: "Personen-Rätsel ",
+    text: "Das ist unser Bundeskanzler. Er hat es endlich geschafft nach vielen Jahren unter Merkel doch noch Kanzler zu werden. <br> Wie alt ist unser Bundeskanzler?",
+    media: "media/merz.webp",
+    loesung: "70",
+    buchstabe: "R"
+  },
+  {
+    gruppe: "Personen-Rätsel",
+    titel: "Personen-Rätsel ",
+    text: "Just Chatting und die Streams mit BastiGHG begeistern seit Jahren tausende von Papaplatte Viewern. <br> Wie alt ist Papaplatte?",
+    media: "media/berühmtheit.webp",
+    loesung: "29",
+    buchstabe: "R"
+  },
+  {
+    gruppe: "Personen-Rätsel",
+    titel: "Personen-Rätsel ",
+    text: "Er ist der Macher von Chihiros Reise, Das Wandelnde Schloss und mein Nachbar Totoro. Seine Werke begeistern schon lange. <br> Wie alt ist Hayao Miyazaki?",
+    media: "media/hayao.webp",
+    loesung: "85",
+    buchstabe: "R"
+  },
+  {
+    gruppe: "Papier-Rätsel",
+    titel: "Liniert-Rätsel",
+    text: "Täglich schreiben wir auf Papier und verschätzen uns, wie viel Platz noch auf der Seite ist. Es wäre gut zu wissen: <br> Wie viele Zeilen hat ein liniertes Papier?",
+    media: "media/a4_liniert.webp",
+    loesung: "33",
+    buchstabe: "S"
+  },
+  {
+    gruppe: "Papier-Rätsel",
+    titel: "Kariert-Rätsel",
+    text: "Jetzt sind wir im Mathe unterricht und das Papier ist, wie alles andere auch, viel komplizierter in Mathe. <br> Wie viele Kästchen hat ein kariertes Papier? Ihr Mathegenies seid gefragt.",
+    media: "media/a4_kariert.webp",
+    loesung: "2478",
+    buchstabe: "S"
+  },
+  {
+    gruppe: null,
+    titel: "Morse-Rätsel",
+    text: "S-O-S. Hört euch die Audio an und entschlüsselt das Lösungswort mithilfe der Morse-Tabelle",
+    media: [
+    "media/morse_legende.webp",
+    "media/morse.wav"
+    ],
+    loesung: "HOFPAUSE",
+    buchstabe: "R"
+  },
+  {
+    gruppe: "Schach-Rätsel",
+    titel: "Schach-Rätsel ",
+    text: "GM Magnus Carlsen vs GM Alireza Firouzja<br>Weiß ist am Zug und droht Schachmatt. Finde den Zug der schwarz schachmatt setzt.<br>Die richtige Schreibweise ergibt sich aus dem Buchstaben der Figur und dem Feld auf das es sich bewegt. z.B. QA5",
+    /*<a href='https://www.youtube.com/watch?v=9Ga9dP3bvN8' target='_blank'>Gothamchess erklärt <a>*/
+    media: [
+      "media/schach1.webp",
+      "media/notation.webp"
+    ],
+    loesung: "C7",
+    buchstabe: "T"
+  },
+  {
+    gruppe: "Schach-Rätsel",
+    titel: "Schach-Rätsel ",
+    text: "GM Hikaru Nakamura vs Ding Liren<br>Jetzt ist schwarz am Zug. Finde den Zug der weiß schachmatt setzt.",
+    /*<a href='https://www.youtube.com/watch?v=9Ga9dP3bvN8' target='_blank'>Gothamchess erklärt <a>*/
+    media: [
+      "media/schach2.webp",
+      "media/notation.webp"
+    ],
+    loesung: "ND3",
+    buchstabe: "T"
+  },
+  {
+    gruppe: "Schach-Rätsel",
+    titel: "Schach-Rätsel",
+    text: "GM Fabiano Caruana vs GM D. Gukesh<br>Die ersten beiden Rätsel waren nur ein Test. Jetzt gilt es gut aufzupassen für alle, die denken sie wären Großmeister: Weiß ist am Zug und kann schwarz schachmatt stellen. Tipp: 'Die Welt steht Kopf und nichts ist unmöglich. Selbst der Kleinste vermag den Lauf des Spiels zu verändern.'<br>Finde den Zug der schwarz schachmatt setzt.",
+    media: [
+      "media/schach3.webp",
+      "media/notation.webp"
+    ],
+    loesung: "E8",
+    buchstabe: "T"
+  },
+];
+
+/* ── FINALES LÖSUNGSWORT ───────────────────────────────────────
+   Das Wort, das die Klasse eingeben muss, um den Timer zu stoppen.
+   Es ergibt sich aus den Buchstaben der gelösten Rätsel in Reihenfolge.
+────────────────────────────────────────────────────────────── */
+const FINALES_LOESUNGSWORT = "ABIROLSPRITZ";
+
+/* ── HINWEIS: Buchstaben der Rätsel ergeben: G-E-H-E-I-M = GEHEIM ── */
+
+</script>
+<!-- ════════════════════════════════════════════════════════════
+     ENDE DER KONFIGURATION — AB HIER NICHTS ÄNDERN
+     ════════════════════════════════════════════════════════ -->
+
+<!-- ── TITELSEITE 1 (Audio-Trigger) ── -->
+<div id="title-screen-1">
+  <audio id="title-audio" style="display:none;" loop>
+    <source id="title-audio-src" src="" />
+  </audio>
+</div>
+
+<!-- ── TITELSEITE 2 (Bild) ── -->
+<div id="title-screen-2" class="hidden">
+  <div id="title-image-wrap" style="display:none;">
+    <img id="title-image" src="" alt="Titelbild" />
+  </div>
+</div>
+
+<!-- ── TITELSEITE 3 (Rätsel-Übersicht) ── -->
+<div id="title-screen-3" class="hidden">
+  <div id="overview-grid"></div>
+</div>
+
+<div id="top-bar">
+  <div style="display:flex;align-items:center;gap:12px;"><img id="school-logo" src="data:image/jpeg;base64,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" alt="Logo" /><div id="game-title"></div></div>
+  <div id="timer-wrap">
+    <button id="sidebar-toggle-btn" title="Rätsel-Liste ausblenden">📋</button>
+    <button id="volume-btn" title="Musik stummschalten">🔊</button>
+    <div id="timer-label"></div>
+    <div id="timer">--:--</div>
+  </div>
+</div>
+
+<div id="main">
+  <!-- Linke Seite: Rätsel -->
+  <div id="puzzle-area">
+    <div id="puzzle-header">
+      <div id="puzzle-title">–</div>
+      <div id="puzzle-sub-info"></div>
+      <div id="puzzle-counter"><span class="counter-dot">✓</span><span id="solved-count">0</span> / <span id="solved-total">?</span></div>
+    </div>
+
+    <div id="puzzle-card">
+      <div id="puzzle-content">
+        <div id="puzzle-question"></div>
+        <div id="puzzle-media"></div>
+        <div id="feedback"></div>
+        <div id="buchstabe-hint"></div>
+      </div>
+      <div id="answer-bar">
+        <input id="answer-input" type="text" placeholder="Antwort eingeben …" autocomplete="off" spellcheck="false" />
+        <button id="check-btn">✔</button>
+      </div>
+    </div>
+
+    <div id="nav-bar">
+      <button class="nav-btn" id="prev-btn">← Zurück</button>
+      <div id="nav-center">Rätsel <span id="nav-num">1</span> von <span id="nav-total">?</span></div>
+      <button class="nav-btn" id="next-btn">Weiter →</button>
+    </div>
+  </div>
+
+  <!-- Abdunklung hinter der Sidebar (nur sichtbar im Handy-Schubladen-Modus) -->
+  <div id="sidebar-backdrop"></div>
+
+  <!-- Rechte Seite: Übersicht -->
+  <div id="sidebar">
+    <div class="sidebar-section-label">📋 Rätsel-Übersicht</div>
+
+    <div id="puzzle-list"></div>
+
+    <div id="sidebar-bottom">
+
+    <div id="solution-section">
+      <div class="sidebar-section-label">Lösungsbuchstaben</div>
+      <div id="solution-word"></div>
+    </div>
+
+    <div id="final-input-section">
+      <div id="final-label">⭐ Lösungswort eingeben</div>
+      <input id="final-input" type="text" placeholder="Lösungswort …" spellcheck="false" autocomplete="off" />
+      <button id="final-btn">🏁 Zeit stoppen!</button>
+      <div id="final-feedback"></div>
+    </div>
+    
+    <div id="sidebar-logo-wrap">
+    <img id="sidebar-logo" src="data:image/jpeg;base64,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" alt="Schullogo" />
+  </div>
+</div>
+  <!-- /sidebar (vorher hier ungeschlossen — dadurch landete das
+       Gewinn-Overlay fälschlich INNERHALB der Sidebar im DOM, was
+       beim Einklappen der Sidebar auch das Overlay unsichtbar
+       gemacht hätte) -->
+  </div>
+
+  <!-- Gewinn-Overlay -->
+  <div id="win-overlay">
+    <div id="win-emoji"></div>
+    <div id="win-title"></div>
+    <div id="win-time"></div>
+    <div id="win-sub"></div>
+    <button id="reset-btn">↺ Neues Spiel starten</button>
+  </div>
+</div>
+
+<script>
+/* ── SPIELLOGIK ── */
+
+/* Titelseite initialisieren */
+if (TITEL_BILD) {
+  const imgWrap = document.getElementById('title-image-wrap');
+  document.getElementById('title-image').src = TITEL_BILD;
+  imgWrap.style.display = 'flex';
+}
+if (TITEL_AUDIO) {
+  document.getElementById('title-audio-src').src = TITEL_AUDIO;
+  document.getElementById('title-audio').load();
+}
+
+/* Klick 1: Audio starten, zu Bildschirm 2 wechseln */
+document.getElementById('title-screen-1').addEventListener('click', () => {
+  if (TITEL_AUDIO) {
+    document.getElementById('title-audio').play().catch(() => {});
+  }
+  document.getElementById('title-screen-1').classList.add('hidden');
+  document.getElementById('title-screen-2').classList.remove('hidden');
+});
+
+/* Klick 2: Zu Übersichtsseite wechseln, Audio stoppen */
+document.getElementById('title-screen-2').addEventListener('click', () => {
+  document.getElementById('title-screen-2').classList.add('hidden');
+  const audio = document.getElementById('title-audio');
+  audio.pause();
+  audio.currentTime = 0;
+  buildOverviewGrid();
+  document.getElementById('title-screen-3').classList.remove('hidden');
+});
+
+/* Übersichtsseite aufbauen */
+function buildOverviewGrid() {
+  const grid = document.getElementById('overview-grid');
+  grid.innerHTML = '';
+  UEBERSICHT_BILDER.forEach((item, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'overview-cell';
+
+    if (item.bild) {
+      const img = document.createElement('img');
+      img.src = item.bild;
+      img.alt = item.label;
+      cell.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'overview-cell-placeholder';
+      ph.textContent = '?';
+      cell.appendChild(ph);
+    }
+
+    const lbl = document.createElement('div');
+    lbl.className = 'overview-cell-label';
+    lbl.textContent = item.label;
+    cell.appendChild(lbl);
+
+    /* Klick: Übersicht verlassen → Timer starten → passendes Rätsel öffnen */
+    cell.addEventListener('click', () => {
+      leaveOverview(i);
+    });
+
+    grid.appendChild(cell);
+  });
+}
+
+/* Übersicht verlassen: Timer starten, Hintergrundmusik starten, Spiel anzeigen */
+function leaveOverview(overviewIndex) {
+  document.getElementById('title-screen-3').classList.add('hidden');
+
+  if (MAIN_AUDIO) {
+    mainAudio = new Audio(MAIN_AUDIO);
+    mainAudio.loop = true;
+    mainAudio.volume = 0.4;
+    mainAudio.play().catch(e => console.log("Audio-Autoplay blockiert:", e));
+    if (document.getElementById('volume-btn')) {
+      document.getElementById('volume-btn').style.display = 'block';
+    }
+  }
+
+  /* Timer sofort starten */
+  startTimer();
+
+  /* Versuche das Rätsel zu finden, das zum angeklickten Bild gehört */
+  const label = UEBERSICHT_BILDER[overviewIndex] ? UEBERSICHT_BILDER[overviewIndex].label : null;
+  if (label) {
+    const idx = RAETSEL.findIndex(r => (r.gruppe || r.titel) === label || r.titel.trim() === label.trim());
+    if (idx !== -1) {
+      current = idx;
+      renderPuzzle(current);
+      buildSidebar();
+      return;
+    }
+  }
+  /* Fallback: erstes Rätsel */
+  renderPuzzle(0);
+  buildSidebar();
+}
+
+/* Gewinn-Overlay Texte setzen */
+document.getElementById('win-emoji').textContent = GEWINN_EMOJI;
+document.getElementById('win-title').textContent = GEWINN_TITEL;
+document.getElementById('win-sub').innerHTML = GEWINN_TEXT;
+
+document.getElementById('game-title').textContent = SPIELTITEL;
+document.getElementById('nav-total').textContent = RAETSEL.length;
+document.getElementById('solved-total').textContent = RAETSEL.length;
+
+let current = 0;
+let solved = new Array(RAETSEL.length).fill(false);
+let seconds = 0;
+let timerInterval = null;
+let running = false;
+let mainAudio = null;
+let isMuted = false;
+
+/* Timer */
+function startTimer() {
+  if (running) return;
+  running = true;
+  timerInterval = setInterval(() => {
+    seconds++;
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = m + ':' + s;
+  }, 1000);
+
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  running = false;
+}
+
+function formatTime(sec) {
+  const m = String(Math.floor(sec / 60)).padStart(2, '0');
+  const s = String(sec % 60).padStart(2, '0');
+  return m + ':' + s;
+}
+
+/* Gruppen berechnen */
+function getGruppen() {
+  const map = {};
+  RAETSEL.forEach((r, i) => {
+    const g = r.gruppe || r.titel;
+    if (!map[g]) map[g] = [];
+    map[g].push(i);
+  });
+  return map;
+}
+
+function gruppeKomplett(indices) {
+  return indices.every(i => solved[i]);
+}
+
+/* Rätsel rendern */
+function renderPuzzle(idx) {
+  const r = RAETSEL[idx];
+
+  // Gruppen-Subinfo (z.B. "Flaggen-Rätsel · 2 von 5")
+  const gruppen = getGruppen();
+  const gruppeIndices = gruppen[r.gruppe] || [idx];
+  const posInGroup = gruppeIndices.indexOf(idx) + 1;
+  const totalInGroup = gruppeIndices.length;
+  const subInfo = document.getElementById('puzzle-sub-info');
+  if (totalInGroup > 1) {
+    subInfo.textContent = r.gruppe + ' · ' + posInGroup + ' von ' + totalInGroup;
+    subInfo.style.display = 'block';
+  } else {
+    subInfo.style.display = 'none';
+  }
+
+  document.getElementById('puzzle-title').textContent = r.titel;
+  document.getElementById('solved-count').textContent = solved.filter(Boolean).length;
+  document.getElementById('solved-total').textContent = RAETSEL.length;
+  document.getElementById('nav-num').textContent = idx + 1;
+  document.getElementById('puzzle-question').innerHTML = r.text.replace(/\n/g, '<br>');
+
+  /* Medium */
+  const mediaEl = document.getElementById('puzzle-media');
+
+  function renderMediaItem(src) {
+    const url = src.toLowerCase();
+    const ext = url.split('?')[0].split('.').pop();
+    const isImage = ['jpg','jpeg','png','gif','webp','svg'].includes(ext)
+                 || url.includes('flagcdn') || url.includes('imgur')
+                 || url.includes('wikimedia') || url.includes('upload')
+                 || src.startsWith('data:image');
+    const isVideo = ['mp4','webm'].includes(ext);
+    const isAudio = ['mp3','wav','m4a','ogg'].includes(ext);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'media-item';
+
+    if (isImage) {
+      wrap.innerHTML = '<img src="' + src + '" alt="R\u00e4tsel-Bild" style="max-width:100%;max-height:100%;width:auto;height:auto;display:block;object-fit:contain;" />';
+    } else if (isVideo) {
+      wrap.innerHTML = '<video controls style="width:100%"><source src="' + src + '"></video>';
+    } else if (isAudio) {
+      wrap.innerHTML = '<audio controls style="padding:16px;width:100%"><source src="' + src + '"></audio>';
+    } else {
+      wrap.innerHTML = '<img src="' + src + '" alt="R\u00e4tsel-Bild" style="max-width:100%;max-height:100%;width:auto;height:auto;display:block;object-fit:contain;" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'\u274c Medium konnte nicht geladen werden.\'" />';
+    }
+    return wrap;
+  }
+
+  /* ── Erkennt ob dieses Rätsel das Musik-Rätsel ist (Melodie + Tonleiter) ── */
+  function isMusicPuzzle(sources) {
+    if (!Array.isArray(sources)) return false;
+    return sources.some(s => /melodie\.(mp3|wav|m4a|ogg)$/i.test(s));
+  }
+
+  /* ── Note-Icon (SVG) für die Hauptmelodie ── */
+  const NOTE_SVG = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none">'
+    + '<ellipse cx="28" cy="76" rx="15" ry="11" fill="#ffffff" transform="rotate(-18 28 76)"/>'
+    + '<rect x="40" y="14" width="5" height="62" fill="#ffffff"/>'
+    + '<path d="M45 14 C 70 18, 78 32, 70 44 C 64 32, 54 26, 45 30 Z" fill="#ffffff"/>'
+    + '</svg>';
+
+  /* ── Klaviertasten-Layout für 9 Töne: C, C#, D, E, Ekurz, F, G, H, Hkurz
+       Wir bauen eine durchgehende Tastatur C D E F G H (= H wie deutsche Notation, also B)
+       und ordnen Sonderfälle (CLang, Ekurz, Hkurz) als zusätzliche helle Tasten mit Sublabel zu. ── */
+  function buildPianoKeys(sources, melodySrc) {
+    // Tonzuordnung: Dateiname-Stamm -> {label, type: white/black, note}
+    const noteMap = {
+      'C':      { label: 'C',  type: 'white' },
+      'CLang':  { label: 'C',  type: 'white', sub: 'lang' },
+      'D':      { label: 'D',  type: 'white' },
+      'E':      { label: 'E',  type: 'white' },
+      'Ekurz':  { label: 'E',  type: 'white', sub: 'kurz' },
+      'F':      { label: 'F',  type: 'white' },
+      'G':      { label: 'G',  type: 'white' },
+      'H':      { label: 'H',  type: 'white' },
+      'Hkurz':  { label: 'H',  type: 'white', sub: 'kurz' }
+    };
+
+    const keys = sources.filter(s => s !== melodySrc).map(src => {
+      const stem = src.split('/').pop().replace(/\.(mp3|wav|m4a|ogg)$/i, '');
+      const info = noteMap[stem] || { label: stem, type: 'white' };
+      return { src, ...info };
+    });
+
+    return keys;
+  }
+
+  function renderMusicPuzzle(sources) {
+    const melodySrc = sources.find(s => /melodie\.(mp3|wav|m4a|ogg)$/i.test(s));
+    const keys = buildPianoKeys(sources, melodySrc);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'music-puzzle-wrap';
+
+    /* Große Note = Hauptmelodie */
+    const noteCol = document.createElement('div');
+    noteCol.style.display = 'flex';
+    noteCol.style.flexDirection = 'column';
+    noteCol.style.alignItems = 'center';
+    noteCol.style.gap = '8px';
+
+    const noteBtn = document.createElement('button');
+    noteBtn.className = 'melody-note-btn';
+    noteBtn.type = 'button';
+    noteBtn.innerHTML = NOTE_SVG;
+    noteBtn.title = 'Hauptmelodie abspielen';
+    noteCol.appendChild(noteBtn);
+
+    const noteLabel = document.createElement('div');
+    noteLabel.className = 'melody-note-label';
+    noteLabel.textContent = '';
+    noteCol.appendChild(noteLabel);
+
+    /* Echter Audio-Player mit Fortschrittsleiste zum gezielten Springen */
+    const melodyAudio = document.createElement('audio');
+    melodyAudio.className = 'melody-audio-player';
+    melodyAudio.controls = true;
+    melodyAudio.preload = 'metadata';
+    const src = document.createElement('source');
+    src.src = melodySrc;
+    melodyAudio.appendChild(src);
+    noteCol.appendChild(melodyAudio);
+
+    noteBtn.addEventListener('click', () => {
+      melodyAudio.currentTime = 0;
+      melodyAudio.play().catch(() => {});
+    });
+
+    wrap.appendChild(noteCol);
+
+    /* Klaviatur = einzelne Töne */
+    const pianoWrap = document.createElement('div');
+    pianoWrap.className = 'piano-wrap';
+    pianoWrap.style.width = 'auto';
+
+    let whiteIndex = 0;
+    keys.forEach(k => {
+      const keyEl = document.createElement('div');
+      const keyAudio = new Audio(k.src);
+
+      if (k.type === 'white') {
+        keyEl.className = 'piano-key white';
+        let labelHtml = k.label;
+        if (k.sub) labelHtml += '<span style="display:block;font-size:11px;font-weight:700;opacity:0.75;">' + k.sub + '</span>';
+        keyEl.innerHTML = labelHtml;
+        whiteIndex++;
+      } else {
+        keyEl.className = 'piano-key black';
+        keyEl.textContent = k.label;
+      }
+
+      keyEl.addEventListener('click', () => {
+        keyAudio.currentTime = 0;
+        keyAudio.play().catch(() => {});
+        keyEl.classList.add('playing');
+        setTimeout(() => keyEl.classList.remove('playing'), 180);
+      });
+
+      pianoWrap.appendChild(keyEl);
+    });
+
+    wrap.appendChild(pianoWrap);
+    return wrap;
+  }
+
+  mediaEl.innerHTML = '';
+  if (r.media) {
+    const sources = Array.isArray(r.media) ? r.media : [r.media];
+    if (isMusicPuzzle(sources)) {
+      mediaEl.appendChild(renderMusicPuzzle(sources));
+    } else {
+      sources.forEach(src => mediaEl.appendChild(renderMediaItem(src)));
+    }
+    mediaEl.style.display = 'flex';
+  } else {
+    mediaEl.style.display = 'none';
+  }
+
+  /* Eingabefeld */
+  const inp = document.getElementById('answer-input');
+  const fb = document.getElementById('feedback');
+  const hint = document.getElementById('buchstabe-hint');
+  inp.value = '';
+  inp.disabled = solved[idx];
+
+  const gruppeVoll = gruppeKomplett(gruppeIndices);
+
+  if (solved[idx]) {
+    if (gruppeVoll) {
+      fb.textContent = '✅ Bereits gelöst! Buchstabe "' + r.buchstabe + '" ist freigeschaltet.';
+    } else {
+      fb.textContent = '✅ Bereits gelöst!';
+    }
+    fb.style.color = 'var(--success)';
+    hint.textContent = '';
+  } else {
+    fb.textContent = '';
+    if (totalInGroup > 1 && !gruppeVoll) {
+      const noch = gruppeIndices.filter(i => !solved[i]).length;
+      hint.textContent = '';
+    } else {
+      hint.textContent = '';
+    }
+  }
+
+  /* Sidebar Highlights */
+  document.querySelectorAll('.puzzle-item').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+
+  if (!solved[idx]) inp.focus();
+}
+
+/* Sidebar aufbauen */
+function buildSidebar() {
+  const list = document.getElementById('puzzle-list');
+  list.innerHTML = '';
+  const gruppen = getGruppen();
+  const collapsedState = {};
+
+  // Gruppen-Collapse-Status aus bestehenden Elementen retten
+  list.querySelectorAll('.gruppe-header').forEach(el => {
+    const g = el.dataset.gruppe;
+    collapsedState[g] = el.nextElementSibling?.classList.contains('collapsed');
+  });
+
+  Object.entries(gruppen).forEach(([gruppenName, indices]) => {
+    const done = gruppeKomplett(indices);
+    const geloest = indices.filter(i => solved[i]).length;
+    const total = indices.length;
+
+    // Gruppen-Header
+    const header = document.createElement('div');
+    header.className = 'gruppe-header';
+    header.dataset.gruppe = gruppenName;
+
+    const label = document.createElement('span');
+    label.textContent = gruppenName;
+
+    const badge = document.createElement('span');
+    badge.className = 'gruppe-badge' + (done ? ' done' : '');
+    badge.textContent = geloest + '/' + total;
+
+    header.appendChild(label);
+    header.appendChild(badge);
+
+    // Fortschrittsbalken
+    const progress = document.createElement('div');
+    progress.className = 'gruppe-progress';
+    const fill = document.createElement('div');
+    fill.className = 'gruppe-progress-fill';
+    fill.style.width = Math.round((geloest / total) * 100) + '%';
+    progress.appendChild(fill);
+
+    // Rätsel-Items Container
+    const itemsWrap = document.createElement('div');
+    itemsWrap.className = 'gruppe-items';
+
+    indices.forEach((rIdx, posInGroup) => {
+      const r = RAETSEL[rIdx];
+      const item = document.createElement('div');
+      item.className = 'puzzle-item' +
+        (solved[rIdx] ? ' solved' : '') +
+        (rIdx === current ? ' active' : '');
+
+      const dot = document.createElement('div');
+      dot.className = 'puzzle-dot';
+      dot.textContent = solved[rIdx] ? '✓' : (posInGroup + 1);
+
+      const name = document.createElement('div');
+      name.className = 'puzzle-item-name';
+      name.textContent = total > 1 ? (posInGroup + 1) + '. ' + r.titel : r.titel;
+
+      item.appendChild(dot);
+      item.appendChild(name);
+      item.addEventListener('click', () => {
+        current = rIdx;
+        renderPuzzle(rIdx);
+        buildSidebar();
+      });
+
+      itemsWrap.appendChild(item);
+    });
+
+    // Collapse-Toggle
+    header.addEventListener('click', () => {
+      itemsWrap.classList.toggle('collapsed');
+      progress.style.display = itemsWrap.classList.contains('collapsed') ? 'none' : '';
+    });
+
+    list.appendChild(header);
+    list.appendChild(progress);
+    list.appendChild(itemsWrap);
+  });
+
+  /* Lösungswort — nur Buchstaben von komplett gelösten Gruppen */
+  const sw = document.getElementById('solution-word');
+  sw.innerHTML = '';
+  const gruppen2 = getGruppen();
+  const seen = {};
+  RAETSEL.forEach((r, i) => {
+    const g = r.gruppe || r.titel;
+    if (seen[g]) return;
+    seen[g] = true;
+    const indices = gruppen2[g];
+    const done = gruppeKomplett(indices);
+    const div = document.createElement('div');
+    div.className = 'sol-letter' + (done ? ' revealed' : '');
+    div.textContent = done ? r.buchstabe : '?';
+    div.title = done ? 'Gruppe ' + g + ': "' + r.buchstabe + '"' : g + ' – noch nicht vollständig gelöst';
+    sw.appendChild(div);
+  });
+
+  /* Finale Eingabe zeigen wenn alle gelöst */
+  const allDone = solved.every(Boolean);
+  const finalSection = document.getElementById('final-input-section');
+  if (allDone) {
+    finalSection.classList.add('visible');
+    document.getElementById('final-input').focus();
+  } else {
+    finalSection.classList.remove('visible');
+  }
+}
+
+/* Antwort prüfen */
+function checkAnswer() {
+  const r = RAETSEL[current];
+  if (solved[current]) return;
+
+  const val = document.getElementById('answer-input').value.trim().toUpperCase();
+  const correct = r.loesung.trim().toUpperCase();
+  const fb = document.getElementById('feedback');
+
+  if (val === correct) {
+    solved[current] = true;
+    const gruppen = getGruppen();
+    const gruppeIndices = gruppen[r.gruppe] || [current];
+    const gruppeVoll = gruppeKomplett(gruppeIndices);
+    const hint = document.getElementById('buchstabe-hint');
+
+    if (gruppeVoll) {
+      fb.textContent = '✅ Richtig! Gruppe komplett – Buchstabe "' + r.buchstabe + '" wurde freigeschaltet! 🎉';
+    } else {
+      const noch = gruppeIndices.filter(i => !solved[i]).length;
+      fb.textContent = '✅ Richtig! Noch ' + noch + ' Rätsel in dieser Gruppe bis zum Buchstaben "' + r.buchstabe + '".';
+    }
+    fb.style.color = 'var(--success)';
+    hint.textContent = '';
+    document.getElementById('answer-input').disabled = true;
+    buildSidebar();
+
+    /* Automatisch zum nächsten ungelösten Rätsel springen (ab aktuellem) */
+    let next = -1;
+    for (let i = current + 1; i < RAETSEL.length; i++) {
+      if (!solved[i]) { next = i; break; }
+    }
+    if (next === -1) {
+      for (let i = 0; i < current; i++) {
+        if (!solved[i]) { next = i; break; }
+      }
+    }
+    if (next !== -1) {
+      setTimeout(() => {
+        current = next;
+        renderPuzzle(current);
+        buildSidebar();
+      }, 1200);
+    }
+  } else {
+    fb.textContent = '❌ Leider falsch – versuch es nochmal!';
+    fb.style.color = 'var(--accent)';
+    document.getElementById('answer-input').select();
+  }
+}
+
+/* Finales Lösungswort prüfen */
+function checkFinal() {
+
+  const val = document.getElementById('final-input').value.trim().toUpperCase();
+  const correct = FINALES_LOESUNGSWORT.trim().toUpperCase();
+  const fb = document.getElementById('final-feedback');
+
+  if (val === correct) {
+    stopTimer();
+    document.getElementById('win-time').textContent = '🕐 Eure Zeit: ' + formatTime(seconds);
+    document.getElementById('win-overlay').classList.add('show');
+     if (mainAudio) {
+     mainAudio.pause();
+    }
+     if (TITEL_AUDIO) {
+    document.getElementById('title-audio').play().catch(() => {});
+    }
+  } else {
+    fb.textContent = '❌ Falsches Lösungswort!';
+    document.getElementById('final-input').style.borderColor = 'var(--accent)';
+    setTimeout(() => {
+      document.getElementById('final-input').style.borderColor = 'var(--gold)';
+      fb.textContent = '';
+    }, 1500);
+  }
+}
+
+/* Neu starten */
+function resetGame() {
+  solved = new Array(RAETSEL.length).fill(false);
+  seconds = 0;
+  current = 0;
+  stopTimer();
+  running = false;
+  document.getElementById('timer').textContent = '00:00';
+  document.getElementById('win-overlay').classList.remove('show');
+  document.getElementById('final-input').value = '';
+  document.getElementById('final-feedback').textContent = '';
+  renderPuzzle(0);
+  buildSidebar();
+}
+
+/* Event Listener */
+document.getElementById('check-btn').addEventListener('click', checkAnswer);
+document.getElementById('answer-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkAnswer();
+});
+document.getElementById('prev-btn').addEventListener('click', () => {
+  current = (current - 1 + RAETSEL.length) % RAETSEL.length;
+  renderPuzzle(current);
+  buildSidebar();
+});
+document.getElementById('next-btn').addEventListener('click', () => {
+  current = (current + 1) % RAETSEL.length;
+  renderPuzzle(current);
+  buildSidebar();
+});
+document.getElementById('final-btn').addEventListener('click', checkFinal);
+document.getElementById('final-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkFinal();
+});
+document.getElementById('reset-btn').addEventListener('click', resetGame);
+
+/* Tastatur-Shortcuts: Pfeiltasten für Navigation (wenn nicht im Eingabefeld) */
+document.addEventListener('keydown', e => {
+  if (document.activeElement === document.getElementById('answer-input')) return;
+  if (document.activeElement === document.getElementById('final-input')) return;
+  if (e.key === 'ArrowLeft') {
+    current = (current - 1 + RAETSEL.length) % RAETSEL.length;
+    renderPuzzle(current);
+    buildSidebar();
+  }
+  if (e.key === 'ArrowRight') {
+    current = (current + 1) % RAETSEL.length;
+    renderPuzzle(current);
+    buildSidebar();
+  }
+});
+document.getElementById('volume-btn').addEventListener('click', () => {
+  if (!mainAudio) return;
+  isMuted = !isMuted;
+  mainAudio.muted = isMuted;
+  document.getElementById('volume-btn').textContent = isMuted ? "🔇" : "🔊";
+});
+
+/* Sidebar ein-/ausklappen — auf breiten Bildschirmen klappt sie ein
+   (mehr Platz fürs Rätselbild), auf schmalen Bildschirmen (Handy)
+   fährt sie stattdessen als Schublade über den Inhalt. */
+const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+function isNarrowViewport() {
+  return window.innerWidth <= 700;
+}
+function sidebarIsVisible() {
+  return isNarrowViewport()
+    ? document.body.classList.contains('sidebar-open')
+    : !document.body.classList.contains('sidebar-collapsed');
+}
+function updateSidebarToggleUI() {
+  const visible = sidebarIsVisible();
+  sidebarToggleBtn.classList.toggle('active', !visible);
+  sidebarToggleBtn.title = visible ? 'Rätsel-Liste ausblenden' : 'Rätsel-Liste einblenden';
+}
+sidebarToggleBtn.addEventListener('click', () => {
+  if (isNarrowViewport()) {
+    document.body.classList.toggle('sidebar-open');
+  } else {
+    document.body.classList.toggle('sidebar-collapsed');
+  }
+  updateSidebarToggleUI();
+});
+sidebarBackdrop.addEventListener('click', () => {
+  document.body.classList.remove('sidebar-open');
+  updateSidebarToggleUI();
+});
+window.addEventListener('resize', updateSidebarToggleUI);
+updateSidebarToggleUI();
+
+/* Init */
+renderPuzzle(0);
+buildSidebar();
+</script>
+</body>
+</html>

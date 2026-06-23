@@ -1814,19 +1814,10 @@ function renderPuzzle(idx) {
     noteLabel.textContent = '';
     noteCol.appendChild(noteLabel);
 
-    /* Echter Audio-Player mit Fortschrittsleiste zum gezielten Springen */
-    const melodyAudio = document.createElement('audio');
-    melodyAudio.className = 'melody-audio-player';
-    melodyAudio.controls = true;
-    melodyAudio.preload = 'metadata';
-    const src = document.createElement('source');
-    src.src = melodySrc;
-    melodyAudio.appendChild(src);
-    noteCol.appendChild(melodyAudio);
-
+    const melodyAudio = new Audio(melodySrc);
     noteBtn.addEventListener('click', () => {
-      melodyAudio.currentTime = 0;
-      melodyAudio.play().catch(() => {});
+    melodyAudio.currentTime = 0;
+    melodyAudio.play().catch(() => {});
     });
 
     wrap.appendChild(noteCol);
